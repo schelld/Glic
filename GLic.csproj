@@ -1,65 +1,79 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <Version>1.0.0</Version>
-    <OutputType>Library</OutputType>
-    <TargetFramework>net472</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Version>1.0.0</Version>
+		<OutputType>Library</OutputType>
+		<TargetFrameworks>net472;net8.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="GLic.Tests\**\*.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="GLic.Tests\**\*.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Google.Apis.Admin.Directory.directory_v1" Version="1.74.0.4159" />
-    <PackageReference Include="Google.Apis.Auth" Version="1.75.0" />
-    <PackageReference Include="Google.Apis.ChromeManagement.v1" Version="1.74.0.4165" />
-    <PackageReference Include="Google.Apis.Licensing.v1" Version="1.74.0.3964" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-    <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
-    <!-- Note: Google.Apis.Admin.Directory.v1 is not available on NuGet.
-         Admin Directory API will be accessed via REST calls with Google.Apis.Auth or alternative approach -->
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Google.Apis.Admin.Directory.directory_v1" Version="1.74.0.4159" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.75.0" />
+		<PackageReference Include="Google.Apis.ChromeManagement.v1" Version="1.74.0.4165" />
+		<PackageReference Include="Google.Apis.Licensing.v1" Version="1.74.0.3964" />
+		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+		<PackageReference Include="System.Text.Json" Version="8.0.5" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="skus.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+		<PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" />
+	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.4.0" PrivateAssets="All" />
+	</ItemGroup>
 
-  <Target Name="StageModule" AfterTargets="Build">
-    <MakeDir Directories="module\GLic" />
-    <!-- Defense in depth: credentials must never ship in the staged module. -->
-    <Delete Files="module\GLic\service-account.json;module\GLic\glic.json;module\GLic\System.Management.Automation.dll" />
-    <!-- SMA is a metadata-only reference assembly provided by the PS runtime; must not ship. -->
-    <ItemGroup>
-      <_StageRefs Include="@(ReferenceCopyLocalPaths)"
-                  Condition="'%(Filename)' != 'System.Management.Automation'" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_StageRefs)" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(OutputPath)GLic.dll" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(OutputPath)GLic.dll.config" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="GLic.psd1" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Exec Command="powershell -NoProfile -File &quot;tools\Set-ModuleVersion.ps1&quot; -Path &quot;module\GLic\GLic.psd1&quot; -Version &quot;$(Version)&quot;" />
-    <Copy SourceFiles="GLic.format.ps1xml" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="GLic.psm1" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="install.ps1" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="uninstall.ps1" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="skus.json" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="glic.sample.json" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="LICENSE" DestinationFolder="module\GLic" SkipUnchangedFiles="true" />
-    <ItemGroup>
-      <_HelpFiles Include="en-US\**\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_HelpFiles)" DestinationFolder="module\GLic\en-US" SkipUnchangedFiles="true" />
-  </Target>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+		<Reference Include="System.Security" />
+	</ItemGroup>
 
-  <!-- InstallModule removed: use install.ps1 from module\GLic\ instead (parameterized, versioned, ACL-hardened). -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="skus.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<Target Name="StageModule" AfterTargets="Build">
+		<PropertyGroup>
+			<ModuleRootDir>module\GLic</ModuleRootDir>
+			<FrameworkTargetDir>$(ModuleRootDir)\$(TargetFramework)</FrameworkTargetDir>
+		</PropertyGroup>
+
+		<MakeDir Directories="$(FrameworkTargetDir)" />
+
+		<Delete Files="$(FrameworkTargetDir)\service-account.json;$(FrameworkTargetDir)\glic.json;$(FrameworkTargetDir)\System.Management.Automation.dll" />
+
+		<ItemGroup>
+			<_StageRefs Include="@(ReferenceCopyLocalPaths)"
+						Condition="'%(Filename)' != 'System.Management.Automation'" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(_StageRefs)" DestinationFolder="$(FrameworkTargetDir)" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(FrameworkTargetDir)" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName).config" DestinationFolder="$(FrameworkTargetDir)" SkipUnchangedFiles="true" Condition="Exists('$(TargetDir)$(TargetFileName).config')" />
+
+		<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+			<_SharedRootFiles Include="GLic.psd1;GLic.format.ps1xml;GLic.psm1;install.ps1;uninstall.ps1;skus.json;glic.sample.json;LICENSE" />
+			<_HelpFiles Include="en-US\**\*" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(_SharedRootFiles)" DestinationFolder="$(ModuleRootDir)" SkipUnchangedFiles="true" Condition="'$(TargetFramework)' == 'net8.0'" />
+
+		<Exec Command="powershell -NoProfile -File &quot;tools\Set-ModuleVersion.ps1&quot; -Path &quot;$(ModuleRootDir)\GLic.psd1&quot; -Version &quot;$(Version)&quot;"
+			  Condition="'$(TargetFramework)' == 'net8.0'" />
+
+		<Copy SourceFiles="@(_HelpFiles)" DestinationFolder="$(ModuleRootDir)\en-US" SkipUnchangedFiles="true" Condition="'$(TargetFramework)' == 'net8.0'" />
+	</Target>
 
 </Project>
-
