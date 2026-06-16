@@ -30,7 +30,7 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            WriteError(new ErrorRecord(ex, "ConnectGlicFailed", ErrorCategory.AuthenticationError, this));
+            ThrowTerminatingError(new ErrorRecord(ex, "ConnectGlicFailed", ErrorCategory.AuthenticationError, this));
         }
     }
 
@@ -71,16 +71,7 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
         // --- Write glic.json ---
         var configDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GLic");
-        Directory.CreateDirectory(configDir);
-
-        var configPath = Path.Combine(configDir, ConfigLocator.ConfigFileName);
-        var cfg = new GlicConfig(customerId, email!);
-        var writeOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        };
-        File.WriteAllText(configPath, JsonSerializer.Serialize(cfg, writeOptions), Encoding.UTF8);
+        WriteGlicJson(configDir, customerId, email!);
 
         // --- Write DPAPI blob ---
         var dpapiPath = ConfigLocator.ResolveDpapiPath(configDir);
@@ -93,9 +84,22 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
 #endif
 
         // --- Set session ---
-        GlicSession.Set(clients, cfg);
+        GlicSession.Set(clients, new GlicConfig(customerId, email!));
 
         Host.UI.WriteLine($"Connected: {email} ({customerId})");
+    }
+
+    internal static void WriteGlicJson(string configDir, string customerId, string adminEmail)
+    {
+        Directory.CreateDirectory(configDir);
+        var configPath = Path.Combine(configDir, ConfigLocator.ConfigFileName);
+        var cfg = new GlicConfig(customerId, adminEmail);
+        var writeOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+        File.WriteAllText(configPath, JsonSerializer.Serialize(cfg, writeOptions), Encoding.UTF8);
     }
 
     /// <summary>Validates that <paramref name="json"/> is a service account key file.

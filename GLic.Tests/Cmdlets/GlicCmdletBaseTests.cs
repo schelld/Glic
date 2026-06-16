@@ -149,6 +149,17 @@ public class GlicCmdletBaseTests : IDisposable
         Assert.Contains("service_account", ex.Message);
     }
 
+    [Fact]
+    public void WriteGlicJson_WritesCustomerIdAndAdminEmail()
+    {
+        var dir = MakeDir("cfg-write");
+        ConnectGlicCmdlet.WriteGlicJson(dir, "C03testxyz", "admin@example.com");
+
+        var text = File.ReadAllText(Path.Combine(dir, ConfigLocator.ConfigFileName));
+        Assert.Contains("C03testxyz", text);
+        Assert.Contains("admin@example.com", text);
+    }
+
     // --- FakeCmdlet ---
 
     private sealed class FakeCmdlet : GlicCmdletBase
