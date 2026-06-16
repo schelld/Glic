@@ -60,8 +60,9 @@ public static class ChromeServiceFactory
         byte[] serviceAccountJson)
     {
         using var stream = new MemoryStream(serviceAccountJson);
-        var credential = (await GoogleCredential
-                .FromStreamAsync(stream, CancellationToken.None))
+        var serviceAccount = await CredentialFactory.FromStreamAsync<ServiceAccountCredential>(
+            stream, CancellationToken.None);
+        var credential = serviceAccount.ToGoogleCredential()
             .CreateScoped(Scopes)
             .CreateWithUser(adminEmail);
 
