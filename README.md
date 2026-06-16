@@ -144,11 +144,21 @@ Connect-Glic -Force                                   # re-authenticate (new key
 
 ### `Get-GlicApps`
 
-Chrome OS app inventory — apps installed across the fleet.
+Fleet-wide Chrome OS app inventory — one aggregate row per app across all enrolled devices.
+
+Uses `countInstalledApps`, which returns device-count totals per app rather than a per-device breakdown. `BrowserDeviceCount` tells you how many devices have each app installed. For the per-device breakdown (which specific device has which app), use `Get-GlicDeviceApps`.
+
+Use this when you need to answer: *Which apps are installed across the fleet? Which are most widespread? What mix of app types (extensions, Android apps, hosted apps) is running?*
 
 ```powershell
 Get-GlicApps
 Get-GlicApps | Export-Csv apps.csv -NoTypeInformation
+
+# Most-deployed apps by device count
+Get-GlicApps | Sort-Object BrowserDeviceCount -Descending | Select-Object -First 20
+
+# Installed app count by type (EXTENSION, APP, ANDROID_APP, HOSTED_APP, THEME)
+Get-GlicApps | Group-Object AppType | Select-Object Name, Count
 ```
 
 **Output:** `AppRow` — `ReportDate`, `CustomerId`, `DisplayName`, `AppId`, `AppType`, `Publisher`, `BrowserDeviceCount`
@@ -157,12 +167,22 @@ Get-GlicApps | Export-Csv apps.csv -NoTypeInformation
 
 ### `Get-GlicDevices`
 
-Chrome OS device inventory — 23-column hardware and status record per device.
+Chrome OS device inventory — 23-column enrollment and status record per device.
+
+Uses the Directory API's full projection to capture identity, assignment, network, and lifecycle fields in a single lightweight pull. This is the authoritative source for device identity and enrollment state. For hardware specs (CPU/RAM/disk) or OS patch compliance, use `Get-GlicHardware` or `Get-GlicTelemetry`.
+
+Use this when you need to answer: *What devices are enrolled? Which are active, disabled, or deprovisioned? When did a device last sync? What is assigned to a particular user or location?*
 
 ```powershell
 Get-GlicDevices                          # active devices (default)
 Get-GlicDevices -Status all              # all statuses
 Get-GlicDevices -Status deprovisioned
+
+# Devices that haven't synced in 90 days
+Get-GlicDevices | Where-Object { $_.LastSync -lt (Get-Date).AddDays(-90) }
+
+# Devices with no assigned user (unallocated inventory)
+Get-GlicDevices | Where-Object { $_.AnnotatedUser -eq '' }
 ```
 
 | Parameter | Default | Values |
@@ -232,11 +252,24 @@ $hw | Where-Object { $lic.UserEmail -contains $_.AnnotatedUser }
 
 ### `Get-GlicLicenses`
 
-Google Workspace license assignments — joins license assignments with user directory.
+Google Workspace license assignments with user details — one row per user per SKU.
+
+Joins the Licensing API with the user directory to add display name, OU, and suspension state to each assignment. Requires `skus.json` to be populated — run `Invoke-GlicDiscover` first. Domain-wide (non-per-user) licenses cannot be reported via this API; a warning is emitted for each.
+
+Use this when you need to answer: *Which users have licenses? How many are assigned per SKU? Are suspended users still consuming licenses? Who hasn't logged in recently?*
 
 ```powershell
 Get-GlicLicenses                                     # all SKUs in skus.json
 Get-GlicLicenses -SkuIds '1010310003','1010310010'  # specific SKUs only
+
+# License count by SKU name
+Get-GlicLicenses | Group-Object SkuName | Select-Object Name, Count
+
+# Suspended users still holding licenses (license reclamation candidates)
+Get-GlicLicenses | Where-Object { $_.Suspended -eq $true }
+
+# Licensed users who haven't logged in for 90 days
+Get-GlicLicenses | Where-Object { $_.LastLoginTime -lt (Get-Date).AddDays(-90) }
 ```
 
 | Parameter | Default | Description |
@@ -251,13 +284,23 @@ Get-GlicLicenses -SkuIds '1010310003','1010310010'  # specific SKUs only
 
 ### `Get-GlicUsers`
 
-User directory export — 23-column record per user.
+Google Workspace user directory export — 23-column record per account.
+
+Uses the Directory API's full user projection, capturing identity, org structure, 2SV enrollment, and suspension state in a single pull. Default is active users only — set `-Suspended All` to include suspended accounts.
+
+Use this when you need to answer: *Who has accounts? Which users are suspended or archived? Which accounts haven't logged in recently? Who isn't enrolled in 2-step verification?*
 
 ```powershell
 Get-GlicUsers                              # active users (default)
 Get-GlicUsers -Suspended All              # active + suspended
 Get-GlicUsers -Suspended Suspended        # suspended only
 Get-GlicUsers -OrgUnit '/Staff'
+
+# Users not enrolled in 2-step verification
+Get-GlicUsers | Where-Object { $_.IsEnrolledIn2Sv -ne $true }
+
+# Accounts that haven't logged in for 180 days (stale account review)
+Get-GlicUsers | Where-Object { $_.LastLoginTime -lt (Get-Date).AddDays(-180) }
 ```
 
 | Parameter | Default | Values |
@@ -267,34 +310,54 @@ Get-GlicUsers -OrgUnit '/Staff'
 
 > Default is `Active` — differs from the old CLI which defaulted to `All`.
 
-**Output:** `UserRow` — `PrimaryEmail`, `FullName`, `OrgUnit`, `IsAdmin`, `IsDelegatedAdmin`, `Suspended`, `Archived`, `LastLoginTime`, `Department`, `JobTitle`, `ManagerEmail`, `Aliases`, and more.
+**Output:** `UserRow` — `PrimaryEmail`, `FullName`, `OrgUnit`, `IsAdmin`, `IsDelegatedAdmin`, `IsEnrolledIn2Sv`, `Suspended`, `Archived`, `LastLoginTime`, `Department`, `JobTitle`, `ManagerEmail`, `Aliases`, and more.
 
 ---
 
 ### `Get-GlicManagedBrowsers`
 
-Per-profile inventory of CBCM-enrolled Chrome browsers.
+CBCM-enrolled Chrome browser inventory — one row per enrolled browser profile.
+
+Queries the Chrome Management Profiles API. Each row is a single profile, not a machine — one physical device can appear multiple times if multiple profiles are enrolled. `LastActivityTime` reflects the most recent user activity; `LastPolicySyncTime` reflects policy freshness.
+
+Use this when you need to answer: *What browser versions are deployed on managed Windows and Mac machines? Which profiles are on an outdated version? Who hasn't received a policy update recently?*
 
 ```powershell
 Get-GlicManagedBrowsers
 Get-GlicManagedBrowsers -OrgUnit '/IT/Managed'
+
+# Version distribution across managed profiles
+Get-GlicManagedBrowsers | Group-Object BrowserVersion | Sort-Object Count -Descending | Select-Object -First 10
+
+# Profiles with stale policy sync (30+ days)
+Get-GlicManagedBrowsers | Where-Object { $_.LastPolicySyncTime -lt (Get-Date).AddDays(-30) }
 ```
 
 | Parameter | Default | Description |
 |---|---|---|
 | `-OrgUnit` | *(all)* | OU path string; falls back to all profiles if filter unsupported |
 
-**Output:** `ManagedBrowserRow` — `ProfilePermanentId`, `ProfileId`, `UserEmail`, `BrowserVersion`, `BrowserChannel`, `OsPlatformType`, `OsVersion`, `Hostname`, `Machine`, `ExtensionCount`, `LastActivityTime`, and more.
+**Output:** `ManagedBrowserRow` — `ProfilePermanentId`, `ProfileId`, `UserEmail`, `BrowserVersion`, `BrowserChannel`, `OsPlatformType`, `OsVersion`, `Hostname`, `Machine`, `ExtensionCount`, `LastActivityTime`, `LastPolicySyncTime`, and more.
 
 ---
 
 ### `Get-GlicDeviceApps`
 
-Per-device app and extension inventory — one row per app per device.
+Per-device app inventory — one row per app per enrolled Chrome OS device.
+
+A nested query: first fetches all apps via `countInstalledApps`, then calls `findInstalledAppDevices` for each one to list which devices have it. This produces a high row-count result and is slower than `Get-GlicApps` on large fleets — scope with `-OrgUnit` when possible. Use `Get-GlicApps` for fleet-wide aggregate counts.
+
+Use this when you need to answer: *Which devices have a specific app installed? What apps are on a particular device? Are any policy-prohibited apps present on school or lab machines?*
 
 ```powershell
 Get-GlicDeviceApps
 Get-GlicDeviceApps -OrgUnit '/Schools/West'
+
+# All devices where a specific extension is installed
+Get-GlicDeviceApps | Where-Object { $_.AppId -eq 'aapbdbdomjkkjkaonfhkkikfgjllcleb' }
+
+# App count per device (outlier detection)
+Get-GlicDeviceApps | Group-Object DeviceId | Select-Object Name, Count | Sort-Object Count -Descending
 ```
 
 | Parameter | Default | Description |
@@ -307,11 +370,21 @@ Get-GlicDeviceApps -OrgUnit '/Schools/West'
 
 ### `Get-GlicBrowserExtensions`
 
-Per-profile extension inventory for CBCM-enrolled browsers.
+Per-profile extension inventory for CBCM-enrolled Chrome browsers — one row per extension per profile.
+
+A nested query similar to `Get-GlicDeviceApps`, but resolves extensions to browser profiles rather than Chrome OS devices. Each row identifies which user profile has which extension installed. Use this for extension security audits on Windows and Mac browser fleets.
+
+Use this when you need to answer: *What extensions are installed in managed browsers? Who has a specific extension? Are any policy-prohibited or high-risk extensions in use?*
 
 ```powershell
 Get-GlicBrowserExtensions
 Get-GlicBrowserExtensions -OrgUnit '/IT'
+
+# Profiles where a specific extension is installed
+Get-GlicBrowserExtensions | Where-Object { $_.AppId -eq 'cjpalhdlnbpafiamejdnhcphjbkeiagm' }
+
+# Extension count per user (high counts may indicate unmanaged installs)
+Get-GlicBrowserExtensions | Group-Object Email | Select-Object Name, Count | Sort-Object Count -Descending
 ```
 
 | Parameter | Default | Description |
@@ -324,15 +397,20 @@ Get-GlicBrowserExtensions -OrgUnit '/IT'
 
 ### `Invoke-GlicDiscover`
 
-Probes the SKU catalog against your tenant and updates `skus.json`. Emits a change summary to the pipeline.
+Probes the SKU catalog against your tenant and writes `skus.json` with active license SKUs.
+
+Tests each known SKU ID via the Licensing API and marks it active or inactive based on whether your tenant has assignments. Only emits pipeline output when something changed — `-Verbose` shows the full probe progress.
+
+Use this when you need to refresh the license catalog — after initial setup, after new Google Workspace SKUs are purchased, or when `Get-GlicLicenses` returns no rows for a SKU you know is active.
 
 ```powershell
 Invoke-GlicDiscover
-Invoke-GlicDiscover -Verbose    # show probe progress
-Invoke-GlicDiscover | Where-Object Status -eq 'now active'
-```
+Invoke-GlicDiscover -Verbose              # show probe progress
 
-> `skus.json` is the output. Run this first to populate license SKUs before using `Get-GlicLicenses`.
+# Review what changed
+Invoke-GlicDiscover | Where-Object Status -eq 'now active'
+Invoke-GlicDiscover | Where-Object Status -eq 'set inactive'
+```
 
 **Output:** `DiscoverChangeRow` — `SkuName`, `SkuId`, `Status` (`now active` or `set inactive`)
 
