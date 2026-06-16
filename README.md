@@ -1,5 +1,3 @@
-# Glic
-
 # GLic — Google Workspace License and Device Inventory
 
 Native PowerShell binary module that queries Google Workspace APIs (Chrome Management, Licensing, Admin Directory) and emits typed objects to the pipeline for ingestion into Enterprise IT Asset Management systems. This repository is not an official Google product.
@@ -57,13 +55,15 @@ Remove the module folder from `$env:PSModulePath` and optionally delete `%APPDAT
 
 **.NET build:** `dotnet build` stages `module\GLic\` automatically via the MSBuild post-build target.
 
-**Three files** are resolved at runtime as described in [Configuration resolution](#configuration-resolution):
+**Credential files** are written to `%APPDATA%\GLic\` by `Connect-Glic` and resolved at runtime as described in [Configuration resolution](#configuration-resolution):
 
-| File | Purpose |
-|---|---|
-| `service-account.json` | GCP service account key (downloaded from Google Cloud Console) |
-| `glic.json` | Workspace config: `customer_id` and `admin_email` |
-| `skus.json` | License SKU list — bundled defaults shipped with the module; refresh with `Invoke-GlicDiscover` |
+| File | Purpose | Created by |
+|---|---|---|
+| `service-account.dpapi` | DPAPI-encrypted service-account key | `Connect-Glic` |
+| `glic.json` | Workspace config: `customer_id` and `admin_email` | `Connect-Glic` |
+| `skus.json` | License SKU list — bundled defaults; refresh with `Invoke-GlicDiscover` | `Invoke-GlicDiscover` |
+
+A plain `service-account.json` is also accepted for legacy or AllUsers installs (see [Configuration resolution](#configuration-resolution)).
 
 The service account must have **Domain-Wide Delegation** granted in Google Admin Console → Security → API Controls → Domain-wide Delegation with these scopes:
 
@@ -87,12 +87,13 @@ The service account must have **Domain-Wide Delegation** granted in Google Admin
 4. `%APPDATA%\GLic\glic.json` (per-user)
 5. The module directory (xcopy/dev layouts)
 
-`service-account.json` is located by trying, in order:
+The service-account credential is located by trying, in order:
 
 1. `-ServiceAccountPath <path>` parameter
-2. `credential_path` key in `glic.json` (relative paths resolve against the `glic.json` directory)
-3. Next to the resolved `glic.json`
-4. The module directory
+2. `service-account.dpapi` next to the resolved `glic.json` (DPAPI-encrypted, written by `Connect-Glic`)
+3. `credential_path` key in `glic.json` (relative paths resolve against the `glic.json` directory)
+4. `service-account.json` next to the resolved `glic.json`
+5. The module directory
 
 `skus.json` is read from the `glic.json` directory first, then the bundled module copy, then
 built-in defaults. `Invoke-GlicDiscover` always writes it next to `glic.json` — never into the
@@ -102,7 +103,8 @@ module directory, so refreshes work without admin rights and survive module upda
 
 ```powershell
 dotnet build                     # compiles + stages module\GLic\
-Import-Module .\module\GLic      # loads all 10 cmdlets
+Import-Module .\module\GLic      # loads all 11 cmdlets
+Connect-Glic                     # first-time credential setup
 Get-Command -Module GLic         # verify
 ```
 
@@ -114,6 +116,27 @@ All data cmdlets share two base parameters:
 |---|---|---|
 | `-Config` | auto-resolved (see [Configuration resolution](#configuration-resolution)) | Path to `glic.json` |
 | `-ServiceAccountPath` | auto-resolved | Path to the service-account key file |
+
+---
+
+### `Connect-Glic`
+
+Authenticates to Google Workspace and stores credentials for the current user. Must be run once before any `Get-Glic*` cmdlet. All subsequent cmdlets auto-connect silently from stored credentials.
+
+```powershell
+Connect-Glic                                          # interactive — prompts for email + key path
+Connect-Glic -AdminEmail admin@domain.com `
+             -ServiceAccountPath C:\keys\sa.json     # scriptable
+Connect-Glic -Force                                   # re-authenticate (new key or admin account)
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `-AdminEmail` | string | Google Workspace admin email — prompted if omitted |
+| `-ServiceAccountPath` | string | Path to `service-account.json` — prompted if omitted |
+| `-Force` | switch | Re-authenticate even if a session is already active |
+
+**Output:** Nothing on the pipeline. Writes a confirmation line to the host.
 
 ---
 
@@ -339,19 +362,26 @@ Get-GlicLicenses | Export-Csv licenses.csv -NoTypeInformation
 ## Architecture
 
 ```
+Connect-Glic
+  → prompts for admin email + service-account.json path
+  → calls customers.get("my_customer") to derive customer ID
+  → writes glic.json + service-account.dpapi to %APPDATA%\GLic\
+  → sets GlicSession (process-scoped singleton)
+
 PowerShell pipeline
   → [Cmdlet] ProcessRecord()
-      → GlicConfig.Load(-Config)          reads glic.json
-      → ChromeServiceFactory.BuildAsync() DWD-scoped Google API clients
+      → TryAutoConnectAsync()             GlicSession → DPAPI blob → legacy SA.json → error
       → GetRowsAsync()                    IAsyncEnumerable<XxxRow> via Paginator
       → EmitRowsAsync()                   buffers rows; WriteObject per row on pipeline thread
 ```
 
-**`GlicCmdletBase`** (25 edges — highest-connected node in the graph) is the bridge between all 10 data cmdlets. It owns: `-Config` / `-ServiceAccountPath` resolution, `ProcessRecord` error routing, `StopProcessing` → `CancellationToken`, collect-then-emit pipeline thread safety.
+**`GlicCmdletBase`** is the bridge between all 10 data cmdlets. It owns: auto-connect via `TryAutoConnectAsync`, `-Config` / `-ServiceAccountPath` resolution, `ProcessRecord` error routing, `StopProcessing` → `CancellationToken`, collect-then-emit pipeline thread safety.
+
+**`GlicSession`** holds live `ApiClients` + `GlicConfig` for the process lifetime. Set by `Connect-Glic`; read by all data cmdlets.
 
 **`Paginator.FetchAllAsync`** provides generic page-token iteration as `IAsyncEnumerable<T>` with cancellation threading throughout.
 
-**`ChromeServiceFactory.BuildAsync`** reads `service-account.json`, builds DWD credentials via `.CreateWithUser(adminEmail)`, and returns an `ApiClients` record bundling `ChromeManagementService`, `LicensingService`, and `DirectoryService`.
+**`ChromeServiceFactory.BuildAsync`** builds DWD credentials via `.CreateWithUser(adminEmail)` and returns an `ApiClients` record bundling `ChromeManagementService`, `LicensingService`, and `DirectoryService`. Accepts either a file path or raw bytes (from DPAPI decryption).
 
 ## Testing
 
