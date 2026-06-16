@@ -19,6 +19,9 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
     private readonly CancellationTokenSource _cts = new CancellationTokenSource();
     protected override void StopProcessing() => _cts.Cancel();
 
+#if NET5_0_OR_GREATER
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#endif
     protected override void ProcessRecord()
     {
         if (GlicSession.IsConnected && !Force.IsPresent) return;
@@ -34,9 +37,11 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
         }
     }
 
+#if NET5_0_OR_GREATER
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#endif
     private async Task ConnectAsync(CancellationToken ct)
     {
-        // --- Collect admin email ---
         var email = AdminEmail?.Trim();
         if (string.IsNullOrWhiteSpace(email))
         {
@@ -46,7 +51,6 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
         if (string.IsNullOrWhiteSpace(email))
             throw new InvalidOperationException("Admin email is required.");
 
-        // --- Collect service-account.json path ---
         var saPath = ServiceAccountPath?.Trim();
         while (string.IsNullOrWhiteSpace(saPath) || !File.Exists(saPath))
         {
@@ -56,11 +60,9 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
             saPath = Host.UI.ReadLine()?.Trim();
         }
 
-        // --- Validate JSON ---
         var saBytes = File.ReadAllBytes(saPath!);
         ValidateServiceAccountJson(saBytes, saPath!);
 
-        // --- Authenticate and derive customer ID ---
         Host.UI.WriteLine("Connecting to Google Workspace...");
         var clients = await ChromeServiceFactory.BuildAsync(email!, saBytes);
         var customer = await clients.Directory.Customers.Get("my_customer").ExecuteAsync(ct);
@@ -68,22 +70,13 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
             ?? throw new InvalidOperationException(
                 "customers.get returned no customer ID. Verify admin_email has admin rights.");
 
-        // --- Write glic.json ---
         var configDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GLic");
         WriteGlicJson(configDir, customerId, email!);
 
-        // --- Write DPAPI blob ---
         var dpapiPath = ConfigLocator.ResolveDpapiPath(configDir);
-#if NET5_0_OR_GREATER
-#pragma warning disable CA1416
-#endif
         File.WriteAllBytes(dpapiPath, DpapiStore.Protect(saBytes));
-#if NET5_0_OR_GREATER
-#pragma warning restore CA1416
-#endif
 
-        // --- Set session ---
         GlicSession.Set(clients, new GlicConfig(customerId, email!));
 
         Host.UI.WriteLine($"Connected: {email} ({customerId})");
@@ -102,8 +95,7 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
         File.WriteAllText(configPath, JsonSerializer.Serialize(cfg, writeOptions), Encoding.UTF8);
     }
 
-    /// <summary>Validates that <paramref name="json"/> is a service account key file.
-    /// Internal so unit tests can call it directly.</summary>
+    // internal for testability (InternalsVisibleTo GLic.Tests)
     internal static void ValidateServiceAccountJson(byte[] json, string path)
     {
         using var doc = JsonDocument.Parse(json);
