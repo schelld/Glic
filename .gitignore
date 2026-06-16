@@ -14,7 +14,8 @@ CLAUDE.md
 # Build output directories
 output/
 module/
-
+docs/*
+!docs/superpowers/
 # dotenv files
 .env
 
