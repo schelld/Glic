@@ -1,0 +1,1596 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-GlicApps</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>GlicApps</command:noun>
+      <maml:description>
+        <maml:para>Returns Chrome app inventory across all ChromeOS devices in the Workspace fleet.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-GlicApps queries the Chrome Management Reports API and returns one AppRow per installed app per device. Each row includes the app ID, display name, type (extension, app, theme), version, installation source, and the device and user it belongs to. Use this cmdlet to audit fleet-wide app coverage, identify unapproved extensions, or feed app data into an ITAM system.</maml:para>
+      <maml:para>All credential and config resolution follows the standard order: -Config / -ServiceAccountPath parameters, then GLIC_CONFIG env var, then %ProgramData%\GLic (AllUsers install), then %APPDATA%\GLic (CurrentUser install), then the module directory.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-GlicApps</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, resolved automatically from the GLIC_CONFIG environment variable, %ProgramData%\GLic, %APPDATA%\GLic, or the module directory (first match wins).</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the same config-directory chain as -Config.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, resolved automatically from the GLIC_CONFIG environment variable, %ProgramData%\GLic, %APPDATA%\GLic, or the module directory (first match wins).</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the same config-directory chain as -Config.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.AppRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires chrome.management.reports.readonly DWD scope.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>--------- Example 1: Export all installed apps to CSV ---------</maml:title>
+        <dev:code>Get-GlicApps | Export-Csv -Path apps.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para>Exports every installed Chrome app across the entire fleet.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>------ Example 2: Find devices with a specific extension ------</maml:title>
+        <dev:code>Get-GlicApps | Where-Object { $_.AppId -eq 'cjpalhdlnbpafiamejdnhcphjbkeiagm' } |
+    Select-Object DeviceId, DisplayName, Version</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicDeviceApps</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicBrowserExtensions</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-GlicBrowserExtensions</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>GlicBrowserExtensions</command:noun>
+      <maml:description>
+        <maml:para>Returns per-profile browser extension inventory from the Chrome Management Reports API.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-GlicBrowserExtensions queries the Chrome Management Reports API and returns one BrowserExtensionRow per extension per browser profile. Each row includes the report date, customer ID, profile permanent ID, profile ID, user email, profile org unit ID, app ID, app type, and display name. Use -OrgUnit to scope the query to a specific organizational unit path (requires admin.directory.orgunit.readonly DWD scope).</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-GlicBrowserExtensions</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>OrgUnit</maml:name>
+          <maml:description>
+            <maml:para>Filters profiles to those in the specified organizational unit path. Requires admin.directory.orgunit.readonly to be granted in the DWD configuration. When omitted, returns data for all profiles.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>OrgUnit</maml:name>
+        <maml:description>
+          <maml:para>Filters profiles to those in the specified organizational unit path. Requires admin.directory.orgunit.readonly to be granted in the DWD configuration. When omitted, returns data for all profiles.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.BrowserExtensionRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires chrome.management.reports.readonly DWD scope. The -OrgUnit parameter additionally requires admin.directory.orgunit.readonly.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>------------- Example 1: Export all extension data -------------</maml:title>
+        <dev:code>Get-GlicBrowserExtensions | Export-Csv -Path extensions.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-- Example 2: Find users with a specific extension installed --</maml:title>
+        <dev:code>Get-GlicBrowserExtensions | Where-Object { $_.AppId -eq 'cjpalhdlnbpafiamejdnhcphjbkeiagm' } |
+    Select-Object Email, DisplayName | Sort-Object Email</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------- Example 3: Top 20 extensions in an IT OU -----------</maml:title>
+        <dev:code>Get-GlicBrowserExtensions -OrgUnit '/IT' |
+    Group-Object AppId | Sort-Object Count -Descending | Select-Object -First 20 Name, Count</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicDeviceApps</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicApps</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-GlicDeviceApps</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>GlicDeviceApps</command:noun>
+      <maml:description>
+        <maml:para>Returns per-device app inventory from the Chrome Management Reports API.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-GlicDeviceApps queries the Chrome Management Reports API and returns one DeviceAppRow per app per device. Each row includes the report date, customer ID, device ID, machine name, app ID, app type, and display name. Use this cmdlet to audit app deployments per device. Use -OrgUnit to scope the query to a specific organizational unit path (requires admin.directory.orgunit.readonly DWD scope).</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-GlicDeviceApps</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>OrgUnit</maml:name>
+          <maml:description>
+            <maml:para>Filters devices to those in the specified organizational unit path. Requires admin.directory.orgunit.readonly to be granted in the DWD configuration. When omitted, returns data for all devices.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>OrgUnit</maml:name>
+        <maml:description>
+          <maml:para>Filters devices to those in the specified organizational unit path. Requires admin.directory.orgunit.readonly to be granted in the DWD configuration. When omitted, returns data for all devices.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.DeviceAppRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires chrome.management.reports.readonly DWD scope. The -OrgUnit parameter additionally requires admin.directory.orgunit.readonly.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>------------ Example 1: Export all device app data ------------</maml:title>
+        <dev:code>Get-GlicDeviceApps | Export-Csv -Path device-apps.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>------- Example 2: Find all devices with a specific app -------</maml:title>
+        <dev:code>Get-GlicDeviceApps | Where-Object { $_.AppId -eq 'com.example.myapp' } |
+    Select-Object DeviceId, Machine, DisplayName</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>------------ Example 3: Top 10 apps in a school OU ------------</maml:title>
+        <dev:code>Get-GlicDeviceApps -OrgUnit '/Schools/West' |
+    Group-Object AppId | Sort-Object Count -Descending | Select-Object -First 10 Name, Count</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicApps</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicBrowserExtensions</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-GlicDevices</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>GlicDevices</command:noun>
+      <maml:description>
+        <maml:para>Returns a list of ChromeOS devices from the Google Workspace Admin Directory.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-GlicDevices queries the Admin Directory API and returns one DeviceRow per enrolled ChromeOS device. Each row includes the device ID, serial number, model, status, annotated user and location, OS version, network MAC addresses, enrollment time, and last sync time. Use -Status to filter by lifecycle state. Pipe the output to Export-Csv or Where-Object for asset reporting.</maml:para>
+      <maml:para>All credential and config resolution follows the standard order: -Config / -ServiceAccountPath parameters, then GLIC_CONFIG env var, then %ProgramData%\GLic (AllUsers install), then %APPDATA%\GLic (CurrentUser install), then the module directory.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-GlicDevices</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, the file is resolved automatically from the GLIC_CONFIG environment variable, %ProgramData%\GLic, %APPDATA%\GLic, or the module directory (first match wins).</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the same config-directory chain as -Config.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Status</maml:name>
+          <maml:description>
+            <maml:para>Filters devices by lifecycle state. Defaults to 'active'.</maml:para>
+          </maml:description>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" command:variableLength="false">all</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">active</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">deprovisioned</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">disabled</command:parameterValue>
+          </command:parameterValueGroup>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>active</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, the file is resolved automatically from the GLIC_CONFIG environment variable, %ProgramData%\GLic, %APPDATA%\GLic, or the module directory (first match wins).</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the same config-directory chain as -Config.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Status</maml:name>
+        <maml:description>
+          <maml:para>Filters devices by lifecycle state. Defaults to 'active'.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>active</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.DeviceRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires the admin.directory.device.chromeos.readonly DWD scope.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>--------- Example 1: Export all active devices to CSV ---------</maml:title>
+        <dev:code>Get-GlicDevices -Status active | Export-Csv -Path devices.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para>Exports all active ChromeOS devices to a CSV file.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------- Example 2: Find devices not synced in 30 days --------</maml:title>
+        <dev:code>$cutoff = (Get-Date).AddDays(-30)
+Get-GlicDevices | Where-Object { $_.LastSync -lt $cutoff } |
+    Select-Object DeviceId, AnnotatedUser, LastSync</dev:code>
+        <dev:remarks>
+          <maml:para>Returns devices that have not checked in with Google in the past 30 days.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------- Example 3: Count devices by status --------------</maml:title>
+        <dev:code>Get-GlicDevices -Status all | Group-Object Status | Select-Object Name, Count</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicHardware</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicTelemetry</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-GlicHardware</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>GlicHardware</command:noun>
+      <maml:description>
+        <maml:para>Returns ITAM hardware records for ChromeOS devices, combining Directory and Telemetry API data.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-GlicHardware joins the Admin Directory and Chrome Management Telemetry APIs to produce a comprehensive hardware record per device. Each HardwareRow includes serial number, model, manufacturer, CPU model and architecture, RAM (RamGb computed property), total disk capacity (TotalDiskGb), disk health, battery health and cycle count, GPU adapter, network MAC addresses, OS update state, auto-update expiration, and all standard device fields. This is the primary cmdlet for ITAM hardware ingestion.</maml:para>
+      <maml:para>Use -Status to filter by device lifecycle state. Use -OrgUnit to scope to a specific organizational unit.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-GlicHardware</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>OrgUnit</maml:name>
+          <maml:description>
+            <maml:para>Filters devices to those in the specified organizational unit path (e.g. '/Staff'). When omitted, returns all devices.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Status</maml:name>
+          <maml:description>
+            <maml:para>Filters devices by lifecycle state. Defaults to 'all' to capture deprovisioned assets for ITAM reconciliation.</maml:para>
+          </maml:description>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" command:variableLength="false">all</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">active</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">deprovisioned</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">disabled</command:parameterValue>
+          </command:parameterValueGroup>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>all</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>OrgUnit</maml:name>
+        <maml:description>
+          <maml:para>Filters devices to those in the specified organizational unit path (e.g. '/Staff'). When omitted, returns all devices.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Status</maml:name>
+        <maml:description>
+          <maml:para>Filters devices by lifecycle state. Defaults to 'all' to capture deprovisioned assets for ITAM reconciliation.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>all</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.HardwareRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires chrome.management.telemetry.readonly and admin.directory.device.chromeos.readonly DWD scopes.</maml:para>
+        <maml:para>HardwareRow exposes computed properties RamGb (double?), TotalDiskGb (double?), and DiskSizeGb (string) in addition to the raw byte fields RamTotalBytes and TotalDiskBytes.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------- Example 1: Export all hardware to CSV for ITAM --------</maml:title>
+        <dev:code>Get-GlicHardware | Export-Csv -Path hardware.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>------- Example 2: Find devices with less than 4 GB RAM -------</maml:title>
+        <dev:code>Get-GlicHardware -Status active | Where-Object { $_.RamGb -lt 4 } |
+    Select-Object SerialNumber, Model, RamGb | Sort-Object RamGb</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>---------- Example 3: Scope to a staff OU and export ----------</maml:title>
+        <dev:code>Get-GlicHardware -Status active -OrgUnit '/Staff' | Export-Csv -Path staff-hardware.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicDevices</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicTelemetry</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-GlicLicenses</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>GlicLicenses</command:noun>
+      <maml:description>
+        <maml:para>Returns Google Workspace license assignments for all users.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-GlicLicenses queries the Google Licensing API and Admin Directory API to return one LicenseRow per user-SKU assignment. Each row includes the user's email, name, org unit, admin status, suspension state, last login time, and the assigned product name, SKU name, and assignment status. Use -SkuIds to limit results to specific license SKUs; when omitted, all SKUs from skus.json are queried. Run Invoke-GlicDiscover first to populate skus.json with the active SKUs in your Workspace tenant.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-GlicLicenses</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>SkuIds</maml:name>
+          <maml:description>
+            <maml:para>One or more Google Workspace SKU IDs to query. When omitted, all SKUs defined in skus.json are queried. Run Invoke-GlicDiscover to populate skus.json with your tenant's active SKUs.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+          <dev:type>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>SkuIds</maml:name>
+        <maml:description>
+          <maml:para>One or more Google Workspace SKU IDs to query. When omitted, all SKUs defined in skus.json are queried. Run Invoke-GlicDiscover to populate skus.json with your tenant's active SKUs.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.LicenseRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires apps.licensing and admin.directory.user.readonly DWD scopes.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>---------- Example 1: Export all license assignments ----------</maml:title>
+        <dev:code>Get-GlicLicenses | Export-Csv -Path licenses.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----- Example 2: Find suspended users with active licenses -----</maml:title>
+        <dev:code>Get-GlicLicenses | Where-Object { $_.Suspended -eq $true } |
+    Select-Object UserEmail, ProductName, SkuName, AssignmentStatus</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>------------- Example 3: Count assignments per SKU -------------</maml:title>
+        <dev:code>Get-GlicLicenses | Group-Object SkuName | Select-Object Name, Count | Sort-Object Count -Descending</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Invoke-GlicDiscover</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicUsers</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-GlicManagedBrowsers</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>GlicManagedBrowsers</command:noun>
+      <maml:description>
+        <maml:para>Returns managed Chrome browser profiles from the Chrome Management Profiles API.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-GlicManagedBrowsers queries the Chrome Management Profiles API and returns one ManagedBrowserRow per browser profile. Each row includes the profile permanent ID, profile ID, user email, browser version, channel, OS platform, OS version, hostname, machine name, extension count, and last activity time. Use -OrgUnit to scope the query to a specific organizational unit path (requires admin.directory.orgunit.readonly DWD scope).</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-GlicManagedBrowsers</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>OrgUnit</maml:name>
+          <maml:description>
+            <maml:para>Filters profiles to those in the specified organizational unit path. Requires admin.directory.orgunit.readonly to be granted in the DWD configuration. When omitted, returns profiles across all OUs.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>OrgUnit</maml:name>
+        <maml:description>
+          <maml:para>Filters profiles to those in the specified organizational unit path. Requires admin.directory.orgunit.readonly to be granted in the DWD configuration. When omitted, returns profiles across all OUs.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.ManagedBrowserRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires chrome.management.profiles.readonly DWD scope. The -OrgUnit parameter additionally requires admin.directory.orgunit.readonly.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------- Example 1: Export all managed browser profiles --------</maml:title>
+        <dev:code>Get-GlicManagedBrowsers | Export-Csv -Path managed-browsers.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>---- Example 2: Find profiles on outdated browser versions ----</maml:title>
+        <dev:code>Get-GlicManagedBrowsers | Where-Object { [version]$_.BrowserVersion -lt [version]'120.0' } |
+    Select-Object UserEmail, Hostname, BrowserVersion | Sort-Object BrowserVersion</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>------------------ Example 3: Scope to an OU ------------------</maml:title>
+        <dev:code>Get-GlicManagedBrowsers -OrgUnit '/IT/Managed' | Select-Object UserEmail, BrowserVersion, ExtensionCount</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicBrowserExtensions</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicDeviceApps</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-GlicTelemetry</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>GlicTelemetry</command:noun>
+      <maml:description>
+        <maml:para>Returns OS update compliance snapshots for ChromeOS devices.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-GlicTelemetry queries the Chrome Management Telemetry API and returns one TelemetryRow per device containing OS version, platform version, firmware version, auto-update expiration date, update state, and reboot/update timestamps. Use this cmdlet to identify devices at or past their auto-update expiration (EOL), devices on outdated OS versions, or devices that have not rebooted recently. Use -OrgUnit to scope the query to a specific organizational unit path. Use -Status to filter by device lifecycle state.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-GlicTelemetry</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>OrgUnit</maml:name>
+          <maml:description>
+            <maml:para>Filters devices to those in the specified organizational unit path (e.g. '/Schools/East'). When omitted, returns devices across all OUs.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Status</maml:name>
+          <maml:description>
+            <maml:para>Filters devices by lifecycle state.</maml:para>
+          </maml:description>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" command:variableLength="false">all</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">active</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">deprovisioned</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">disabled</command:parameterValue>
+          </command:parameterValueGroup>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>active</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>OrgUnit</maml:name>
+        <maml:description>
+          <maml:para>Filters devices to those in the specified organizational unit path (e.g. '/Schools/East'). When omitted, returns devices across all OUs.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Status</maml:name>
+        <maml:description>
+          <maml:para>Filters devices by lifecycle state.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>active</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.TelemetryRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires chrome.management.telemetry.readonly and admin.directory.device.chromeos.readonly DWD scopes.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>----------------- Example 1: Find EOL devices -----------------</maml:title>
+        <dev:code>Get-GlicTelemetry | Where-Object { $_.AutoUpdateExpiration -lt (Get-Date) } |
+    Select-Object DeviceId, SerialNumber, AutoUpdateExpiration | Sort-Object AutoUpdateExpiration</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>--------- Example 2: Devices expiring within 12 months ---------</maml:title>
+        <dev:code>$cutoff = (Get-Date).AddMonths(12)
+Get-GlicTelemetry -Status active |
+    Where-Object { $_.AutoUpdateExpiration -gt (Get-Date) -and $_.AutoUpdateExpiration -lt $cutoff } |
+    Export-Csv -Path expiring-soon.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>------------------ Example 3: Scope to an OU ------------------</maml:title>
+        <dev:code>Get-GlicTelemetry -OrgUnit '/Schools/East' | Select-Object DeviceId, OsVersion, UpdateState</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicHardware</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicDevices</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-GlicUsers</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>GlicUsers</command:noun>
+      <maml:description>
+        <maml:para>Returns user accounts from the Google Workspace Admin Directory.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-GlicUsers queries the Admin Directory API and returns one UserRow per user. Each row includes primary email, given name, family name, org unit, admin status, suspension and archive state, last login time, department, job title, cost center, employee ID, manager email, and aliases. Use -Suspended to filter by suspension state; the default is 'Active'. Use -OrgUnit to scope to a specific organizational unit path.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-GlicUsers</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>OrgUnit</maml:name>
+          <maml:description>
+            <maml:para>Filters users to those in the specified organizational unit path (e.g. '/Staff'). When omitted, returns users across all OUs.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Suspended</maml:name>
+          <maml:description>
+            <maml:para>Filters users by suspension state. Defaults to 'Active'.</maml:para>
+          </maml:description>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" command:variableLength="false">Active</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">All</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">Suspended</command:parameterValue>
+          </command:parameterValueGroup>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Active</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>OrgUnit</maml:name>
+        <maml:description>
+          <maml:para>Filters users to those in the specified organizational unit path (e.g. '/Staff'). When omitted, returns users across all OUs.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Suspended</maml:name>
+        <maml:description>
+          <maml:para>Filters users by suspension state. Defaults to 'Active'.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Active</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.UserRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires admin.directory.user.readonly DWD scope.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------- Example 1: Export all active users --------------</maml:title>
+        <dev:code>Get-GlicUsers | Export-Csv -Path users.csv -NoTypeInformation</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>--------------- Example 2: Find suspended users ---------------</maml:title>
+        <dev:code>Get-GlicUsers -Suspended Suspended | Select-Object PrimaryEmail, FullName, OrgUnit, LastLoginTime</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-- Example 3: Users in a specific OU who have never logged in --</maml:title>
+        <dev:code>Get-GlicUsers -OrgUnit '/Staff' | Where-Object { $null -eq $_.LastLoginTime } |
+    Select-Object PrimaryEmail, GivenName, FamilyName</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicLicenses</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Invoke-GlicDiscover</command:name>
+      <command:verb>Invoke</command:verb>
+      <command:noun>GlicDiscover</command:noun>
+      <maml:description>
+        <maml:para>Discovers active Google Workspace license SKUs and writes a local skus.json catalog.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Invoke-GlicDiscover queries the Google Licensing API for all SKUs assigned in the Workspace tenant and writes the results to skus.json in the GLic config directory (%ProgramData%\GLic for AllUsers installs or %APPDATA%\GLic for CurrentUser installs). The resulting file is used by Get-GlicLicenses to know which SKUs to query. Run this cmdlet once after installation and again whenever new license SKUs are purchased or removed. Returns one DiscoverChangeRow per SKU that was added, removed, or changed relative to the previous skus.json.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Invoke-GlicDiscover</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Config</maml:name>
+          <maml:description>
+            <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ServiceAccountPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Config</maml:name>
+        <maml:description>
+          <maml:para>Path to glic.json. When omitted, resolved automatically from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ServiceAccountPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the GCP service-account key JSON file. When omitted, resolved from the config-directory chain.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>GLic.Cmdlets.DiscoverChangeRow</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Requires apps.licensing DWD scope. Always writes skus.json to the config directory, never to the module folder, so refreshes work without admin rights and survive module updates.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------- Example 1: Refresh the SKU catalog --------------</maml:title>
+        <dev:code>Invoke-GlicDiscover</dev:code>
+        <dev:remarks>
+          <maml:para>Updates skus.json and displays a summary of any changes since the last run.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>---------------- Example 2: Check what changed ----------------</maml:title>
+        <dev:code>Invoke-GlicDiscover | Format-Table SkuName, Status</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>------- Example 3: Alert on new SKUs in a scheduled job -------</maml:title>
+        <dev:code>Invoke-GlicDiscover | Where-Object { $_.Status -eq 'Added' } | ForEach-Object {
+    Write-Host "New SKU detected: $($_.SkuName) ($($_.SkuId))"
+}</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-GlicLicenses</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>about_GLic</maml:linkText>
+        <maml:uri></maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+</helpItems>

@@ -1,0 +1,77 @@
+TOPIC
+    about_GLic
+
+SHORT DESCRIPTION
+    Google Workspace inventory and licensing cmdlets for PowerShell pipelines
+    and ITAM ingestion.
+
+LONG DESCRIPTION
+    GLic queries three Google Workspace APIs - Chrome Management, Licensing,
+    and Admin Directory - and returns strongly-typed PSObjects for pipeline
+    consumption or direct ITAM ingestion.
+
+  Authentication model
+    GLic uses a Google Cloud service account with Domain-Wide Delegation (DWD).
+    Two files are always required:
+
+        service-account.json    The GCP service-account key (downloaded from
+                                Google Cloud Console > IAM > Service Accounts
+                                > Keys).
+
+        glic.json               Workspace-specific config:
+                                  {
+                                    "customer_id": "C03xxxxx",
+                                    "admin_email": "admin@yourdomain.com"
+                                  }
+
+    The service account itself has no Workspace identity. DWD lets it
+    impersonate the admin_email user for API calls. The admin_email must be
+    a Workspace admin (or delegated admin) in your domain.
+
+    The service account is the key; the admin email is the door. Both are
+    required. Without either, all cmdlets return 403.
+
+  Config resolution order
+    GLic resolves config files in this order (first match wins):
+
+        1. -Config / -ServiceAccountPath parameters on the cmdlet
+        2. GLIC_CONFIG environment variable (path to glic.json)
+        3. %ProgramData%\GLic\           (AllUsers install)
+        4. %APPDATA%\GLic\               (CurrentUser install)
+        5. The module directory itself   (development / portable use)
+
+    For production, install.ps1 places credentials in option 3 or 4.
+    For development, drop glic.json and service-account.json into
+    %APPDATA%\GLic\.
+
+  Domain-Wide Delegation scopes
+    Grant these scopes to the service account in Google Admin Console >
+    Security > API Controls > Domain-wide Delegation:
+
+        chrome.management.reports.readonly
+            Get-GlicApps, Get-GlicDeviceApps, Get-GlicBrowserExtensions
+
+        chrome.management.telemetry.readonly
+            Get-GlicHardware, Get-GlicTelemetry
+
+        chrome.management.profiles.readonly
+            Get-GlicManagedBrowsers
+
+        admin.directory.device.chromeos.readonly
+            Get-GlicDevices, Get-GlicHardware, Get-GlicTelemetry
+
+        admin.directory.user.readonly
+            Get-GlicUsers, Get-GlicLicenses
+
+        admin.directory.orgunit.readonly
+            Get-GlicManagedBrowsers, Get-GlicDeviceApps,
+            Get-GlicBrowserExtensions (when -OrgUnit is used)
+
+        apps.licensing
+            Get-GlicLicenses, Invoke-GlicDiscover
+
+SEE ALSO
+    Get-GlicDevices
+    Get-GlicHardware
+    Get-GlicLicenses
+    Invoke-GlicDiscover
