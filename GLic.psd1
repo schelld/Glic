@@ -4,16 +4,17 @@
     Author                 = 'D. Schell'
     Copyright              = 'Copyright (c) 2026 D. Schell'
     Description            = 'Google Workspace inventory and licensing cmdlets for Flexera ITAM ingestion'
-    RootModule             = 'GLic.psm1'
+    RootModule             = if ($PSEdition -eq 'Core') { 'net8.0\GLic.dll' } else { 'net472\GLic.dll' }
     PowerShellVersion      = '5.1'
     DotNetFrameworkVersion = '4.7.2'
-    CompatiblePSEditions   = @('Desktop')
+    CompatiblePSEditions   = @('Desktop', 'Core')
 
     FormatsToProcess       = @('GLic.format.ps1xml')
     FunctionsToExport      = @()
     AliasesToExport        = @()
 
     CmdletsToExport        = @(
+        'Connect-Glic',
         'Get-GlicApps',
         'Get-GlicDevices',
         'Get-GlicTelemetry',

@@ -113,6 +113,42 @@ public class GlicCmdletBaseTests : IDisposable
         Assert.Contains("Connect-Glic", ex.Message);
     }
 
+    // --- ConnectGlicCmdlet.ValidateServiceAccountJson ---
+
+    [Fact]
+    public void ValidateServiceAccountJson_WithValidJson_DoesNotThrow()
+    {
+        var json = System.Text.Encoding.UTF8.GetBytes(
+            """{"type":"service_account","project_id":"my-project","client_email":"sa@my-project.iam.gserviceaccount.com"}""");
+
+        // No exception expected
+        ConnectGlicCmdlet.ValidateServiceAccountJson(json, "test.json");
+    }
+
+    [Fact]
+    public void ValidateServiceAccountJson_WithWrongType_Throws()
+    {
+        var json = System.Text.Encoding.UTF8.GetBytes(
+            """{"type":"authorized_user","client_id":"12345"}""");
+
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => ConnectGlicCmdlet.ValidateServiceAccountJson(json, "bad.json"));
+
+        Assert.Contains("service_account", ex.Message);
+        Assert.Contains("bad.json", ex.Message);
+    }
+
+    [Fact]
+    public void ValidateServiceAccountJson_WithMissingTypeField_Throws()
+    {
+        var json = System.Text.Encoding.UTF8.GetBytes("""{"project_id":"my-project"}""");
+
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => ConnectGlicCmdlet.ValidateServiceAccountJson(json, "no-type.json"));
+
+        Assert.Contains("service_account", ex.Message);
+    }
+
     // --- FakeCmdlet ---
 
     private sealed class FakeCmdlet : GlicCmdletBase
