@@ -12,17 +12,12 @@ LONG DESCRIPTION
 
   Authentication model
     GLic uses a Google Cloud service account with Domain-Wide Delegation (DWD).
-    Two files are always required:
 
-        service-account.json    The GCP service-account key (downloaded from
-                                Google Cloud Console > IAM > Service Accounts
-                                > Keys).
-
-        glic.json               Workspace-specific config:
-                                  {
-                                    "customer_id": "C03xxxxx",
-                                    "admin_email": "admin@yourdomain.com"
-                                  }
+    Run Connect-Glic once to complete setup. It prompts for your admin email
+    and the path to your service-account.json key, derives the customer ID
+    from the Directory API, and stores credentials securely using Windows
+    DPAPI encryption in %APPDATA%\GLic\. Subsequent sessions auto-connect
+    silently.
 
     The service account itself has no Workspace identity. DWD lets it
     impersonate the admin_email user for API calls. The admin_email must be
@@ -40,9 +35,9 @@ LONG DESCRIPTION
         4. %APPDATA%\GLic\               (CurrentUser install)
         5. The module directory itself   (development / portable use)
 
-    For production, install.ps1 places credentials in option 3 or 4.
-    For development, drop glic.json and service-account.json into
-    %APPDATA%\GLic\.
+    Connect-Glic writes credentials to option 4 (%APPDATA%\GLic\).
+    For development, drop glic.json and service-account.json there
+    directly, or run Connect-Glic.
 
   Domain-Wide Delegation scopes
     Grant these scopes to the service account in Google Admin Console >

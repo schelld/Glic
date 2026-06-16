@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-16
+
+### Added
+- `Connect-Glic` cmdlet: interactive first-time setup that prompts for admin email and
+  `service-account.json` path, derives the Google customer ID via the Directory API, and
+  stores credentials securely using Windows DPAPI (`service-account.dpapi` in `%APPDATA%\GLic\`).
+- Silent auto-connect: all existing cmdlets reconnect automatically in a new session using
+  stored DPAPI credentials — no manual `glic.json` or credential placement required.
+- `-Force` switch on `Connect-Glic` to re-authenticate without restarting PowerShell.
+
+### Removed
+- `install.ps1` and `uninstall.ps1` — replaced by `Connect-Glic` for credential setup and
+  native `Install-Module` / `Uninstall-Module` for module lifecycle.
+
 ## [1.0.0] - 2026-06-12
 
 ### Added

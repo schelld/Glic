@@ -18,62 +18,37 @@ Get-GlicHardware | ConvertTo-Json | Out-File hardware.json
 
 ### Manual (ZIP or network share)
 
-If you received a pre-built `GLic` folder:
-
-1. Extract the folder anywhere on the target machine.
-2. Run `.\install.ps1` (or right-click → **Run with PowerShell**). It prompts for your
-   Customer ID, admin email, and the path to your `service-account.json` — or finds the
-   key automatically if you drop it next to the installer first.
-3. Open a new PowerShell window — all cmdlets are available immediately.
-
-The installer is scriptable for fleet deployment:
+Copy the `GLic` folder to any location in your `$env:PSModulePath`, then run `Connect-Glic` once to complete setup:
 
 ```powershell
-# Silent machine-wide install (elevated session)
-.\install.ps1 -CustomerId C03xxxxx -AdminEmail glic-svc@yourdomain.com `
-              -ServiceAccountPath C:\keys\sa.json -Scope AllUsers -NoVerify
+# First-time setup — prompts for admin email and service-account.json path
+Import-Module GLic
+Connect-Glic
 
-# Let a scheduled-task identity read the key
-.\install.ps1 -Scope AllUsers -ReadAccessAccount 'DOMAIN\svc-itam'
+# Scriptable / silent
+Connect-Glic -AdminEmail admin@yourdomain.com -ServiceAccountPath C:\keys\sa.json
 ```
 
-Scope rules: an elevated session defaults to `-Scope AllUsers` (module in
-`Program Files`, config in `%ProgramData%\GLic`, key readable only by SYSTEM +
-Administrators + any `-ReadAccessAccount`); a non-elevated session falls back to
-`-Scope CurrentUser` (module in `Documents\WindowsPowerShell\Modules`, config in
-`%APPDATA%\GLic`). Standard users cannot read a machine-wide key by default —
-grant a `-ReadAccessAccount` or have them install with `-Scope CurrentUser`.
-Re-running the installer upgrades in place: it reuses your existing config
-without prompting and removes older versions.
+`Connect-Glic` calls the Directory API to derive the customer ID, encrypts the service-account key with Windows DPAPI, and writes both `glic.json` and `service-account.dpapi` to `%APPDATA%\GLic\`. Subsequent PowerShell sessions auto-connect silently — no further configuration is needed.
+
+To update credentials (new key or new admin account), run `Connect-Glic -Force`.
 
 ### Uninstall
 
-```powershell
-.\uninstall.ps1                                    # remove all installs, prompt about config
-.\uninstall.ps1 -Scope CurrentUser -RemoveConfig   # silent per-user removal incl. key
-```
-
-`uninstall.ps1` ships inside the installed module folder, so it is always available
-even without the original download. Exit codes: 0 = success, 2 = an AllUsers
-install was found but the session was not elevated.
+Remove the module folder from `$env:PSModulePath` and optionally delete `%APPDATA%\GLic\` to remove stored credentials.
 
 ## Getting Started (build from source)
 
 1. **Build** — run `dotnet build` in the repo root. This compiles the project and stages the module under `module\GLic\`.
 
-2. **Create a service account** — in Google Cloud Console, create a service account and download its JSON key as `service-account.json`. Place it in `%APPDATA%\GLic\` (or pass `-ServiceAccountPath`).
+2. **Create a service account** — in Google Cloud Console, create a service account and download its JSON key.
 
 3. **Grant Domain-Wide Delegation** — in Google Admin Console → Security → API Controls → Domain-wide Delegation, add the service account's client ID with the [scopes listed in Requirements](#requirements).
 
-4. **Create `glic.json`** — place it in the same folder (`%APPDATA%\GLic\`); `glic.sample.json` in the module folder is a starting template:
-   ```json
-   { "customer_id": "xxxxxxxx", "admin_email": "admin@yourdomain.com" }
-   ```
-   If your key file lives elsewhere, add an optional `"credential_path"` key (relative paths resolve against the `glic.json` directory).
-
-5. **Import and run** —
+4. **Connect and run** —
    ```powershell
    Import-Module .\module\GLic
+   Connect-Glic             # prompts for admin email + path to service-account.json key
    Invoke-GlicDiscover      # populates skus.json; run once before Get-GlicLicenses
    Get-GlicDevices          # verify the setup works
    ```
