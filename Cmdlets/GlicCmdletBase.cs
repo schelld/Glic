@@ -78,7 +78,9 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
         try
         {
             if (Config == null && ServiceAccountPath == null)
+#pragma warning disable CA1416 // ProcessRecord runs in context of PowerShell host
                 TryAutoConnectAsync(Cts.Token).GetAwaiter().GetResult();
+#pragma warning restore CA1416
             RunAsync(Cts.Token).GetAwaiter().GetResult();
         }
         catch (FileNotFoundException ex)
@@ -117,6 +119,9 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
     }
 
     // internal for testability (InternalsVisibleTo GLic.Tests)
+#if NET5_0_OR_GREATER
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#endif
     internal async Task TryAutoConnectAsync(
         CancellationToken ct, IReadOnlyList<string>? probeDirs = null)
     {
@@ -135,13 +140,7 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
             var dpapiPath = ConfigLocator.ResolveDpapiPath(dir);
             if (File.Exists(dpapiPath))
             {
-#if NET5_0_OR_GREATER
-#pragma warning disable CA1416 // Validate platform compatibility — runs only on Windows in practice
-#endif
                 var json = DpapiStore.Unprotect(File.ReadAllBytes(dpapiPath));
-#if NET5_0_OR_GREATER
-#pragma warning restore CA1416
-#endif
                 var clients = await ChromeServiceFactory.BuildAsync(cfg.AdminEmail, json);
                 GlicSession.Set(clients, cfg);
                 return;
