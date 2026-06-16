@@ -9,6 +9,7 @@ using GLic.Auth;
 
 namespace GLic.Tests.Auth;
 
+[Collection("GlicSession")]
 public class GlicSessionTests : IDisposable
 {
     // Clear static state between tests

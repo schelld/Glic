@@ -23,12 +23,22 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
     protected string ResolvedConfigPath =>
         _resolvedConfigPath ??= ConfigLocator.ResolveConfigPath(NormalizePath(Config));
 
-    protected GlicConfig LoadConfig() => GlicConfig.Load(ResolvedConfigPath);
+    protected GlicConfig LoadConfig()
+    {
+        if (GlicSession.IsConnected && Config == null)
+            return GlicSession.Config!;
+        return GlicConfig.Load(ResolvedConfigPath);
+    }
 
-    protected Task<ApiClients> BuildClientsAsync(GlicConfig cfg) =>
-        ChromeServiceFactory.BuildAsync(
+    protected Task<ApiClients> BuildClientsAsync(GlicConfig cfg)
+    {
+        if (GlicSession.IsConnected && Config == null && ServiceAccountPath == null)
+            return Task.FromResult(GlicSession.Clients!);
+        return ChromeServiceFactory.BuildAsync(
             cfg.AdminEmail,
-            ConfigLocator.ResolveCredentialPath(NormalizePath(ServiceAccountPath), cfg.CredentialPath, ResolvedConfigPath));
+            ConfigLocator.ResolveCredentialPath(
+                NormalizePath(ServiceAccountPath), cfg.CredentialPath, ResolvedConfigPath));
+    }
 
     // Relative user input must resolve against the PowerShell location, not the
     // process CWD — they routinely differ in PS 5.1. Requires the pipeline thread;
@@ -67,6 +77,8 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
     {
         try
         {
+            if (Config == null && ServiceAccountPath == null)
+                TryAutoConnectAsync(Cts.Token).GetAwaiter().GetResult();
             RunAsync(Cts.Token).GetAwaiter().GetResult();
         }
         catch (FileNotFoundException ex)
@@ -102,5 +114,50 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
     {
         await foreach (var row in rows.WithCancellation(ct))
             _outputBuffer.Add(row!);
+    }
+
+    // internal for testability (InternalsVisibleTo GLic.Tests)
+    internal async Task TryAutoConnectAsync(
+        CancellationToken ct, IReadOnlyList<string>? probeDirs = null)
+    {
+        if (GlicSession.IsConnected) return;
+
+        probeDirs ??= ConfigLocator.DefaultConfigDirs();
+
+        foreach (var dir in probeDirs)
+        {
+            var configPath = Path.Combine(dir, ConfigLocator.ConfigFileName);
+            if (!File.Exists(configPath)) continue;
+
+            var cfg = GlicConfig.Load(configPath);
+
+            // Prefer DPAPI blob (written by Connect-Glic)
+            var dpapiPath = ConfigLocator.ResolveDpapiPath(dir);
+            if (File.Exists(dpapiPath))
+            {
+#if NET5_0_OR_GREATER
+#pragma warning disable CA1416 // Validate platform compatibility — runs only on Windows in practice
+#endif
+                var json = DpapiStore.Unprotect(File.ReadAllBytes(dpapiPath));
+#if NET5_0_OR_GREATER
+#pragma warning restore CA1416
+#endif
+                var clients = await ChromeServiceFactory.BuildAsync(cfg.AdminEmail, json);
+                GlicSession.Set(clients, cfg);
+                return;
+            }
+
+            // Fall back to plain service-account.json (AllUsers / manual install)
+            var credPath = Path.Combine(dir, ConfigLocator.CredentialFileName);
+            if (File.Exists(credPath))
+            {
+                var clients = await ChromeServiceFactory.BuildAsync(cfg.AdminEmail, credPath);
+                GlicSession.Set(clients, cfg);
+                return;
+            }
+        }
+
+        throw new InvalidOperationException(
+            "No GLic session. Run Connect-Glic to authenticate.");
     }
 }
