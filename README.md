@@ -2,17 +2,9 @@
 
 Native PowerShell binary module that queries Google Workspace APIs (Chrome Management, Licensing, Admin Directory) and emits typed objects to the pipeline for ingestion into Enterprise IT Asset Management systems. This repository is not an official Google product.
 
-```powershell
-Import-Module .\module\GLic
-Get-GlicDevices | Export-Csv devices.csv -NoTypeInformation
-Get-GlicUsers | Where-Object { $_.OrgUnitPath -like '/Staff/*' }
-Get-GlicHardware | ConvertTo-Json | Out-File hardware.json
-```
-
 ## Installation
 
 ### PowerShell Gallery Not Yet Implemented
-
 
 ### Manual (ZIP or network share)
 
@@ -34,6 +26,16 @@ To update credentials (new key or new admin account), run `Connect-Glic -Force`.
 ### Uninstall
 
 Remove the module folder from `$env:PSModulePath` and optionally delete `%APPDATA%\GLic\` to remove stored credentials.
+
+## Quick Start
+
+```powershell
+Import-Module GLic
+Connect-Glic                                            # one-time setup
+Get-GlicDevices | Export-Csv devices.csv -NoTypeInformation
+Get-GlicUsers | Where-Object { $_.OrgUnitPath -like '/Staff/*' }
+Get-GlicHardware | ConvertTo-Json | Out-File hardware.json
+```
 
 ## Getting Started (build from source)
 
