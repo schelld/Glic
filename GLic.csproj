@@ -64,7 +64,7 @@
 		<Copy SourceFiles="$(TargetDir)$(TargetFileName).config" DestinationFolder="$(FrameworkTargetDir)" SkipUnchangedFiles="true" Condition="Exists('$(TargetDir)$(TargetFileName).config')" />
 
 		<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-			<_SharedRootFiles Include="GLic.psd1;GLic.format.ps1xml;GLic.psm1;install.ps1;uninstall.ps1;skus.json;glic.sample.json;LICENSE" />
+			<_SharedRootFiles Include="GLic.psd1;GLic.format.ps1xml;GLic.psm1;skus.json;glic.sample.json;LICENSE" />
 			<_HelpFiles Include="en-US\**\*" />
 		</ItemGroup>
 
