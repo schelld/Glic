@@ -52,4 +52,28 @@ public static class ChromeServiceFactory
             new LicensingService(initializer),
             new DirectoryService(initializer));
     }
+
+    /// <summary>Builds clients from raw service-account JSON bytes (e.g. from a DPAPI blob).
+    /// No file is written to disk at any point.</summary>
+    public static async Task<ApiClients> BuildAsync(
+        string adminEmail,
+        byte[] serviceAccountJson)
+    {
+        using var stream = new MemoryStream(serviceAccountJson);
+        var credential = (await GoogleCredential
+                .FromStreamAsync(stream, CancellationToken.None))
+            .CreateScoped(Scopes)
+            .CreateWithUser(adminEmail);
+
+        var initializer = new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = "GLic"
+        };
+
+        return new ApiClients(
+            new ChromeManagementService(initializer),
+            new LicensingService(initializer),
+            new DirectoryService(initializer));
+    }
 }
