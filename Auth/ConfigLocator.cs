@@ -12,7 +12,6 @@ public static class ConfigLocator
 {
     public const string ConfigFileName = "glic.json";
     public const string CredentialFileName = "service-account.json";
-    public const string DpapiCredentialFileName = "service-account.dpapi";
     public const string SkuFileName = "skus.json";
 
     internal static string ModuleDir =>
@@ -93,10 +92,6 @@ public static class ConfigLocator
         var moduleCandidate = Path.Combine(moduleDir, SkuFileName);
         return File.Exists(moduleCandidate) ? moduleCandidate : configCandidate;
     }
-
-    /// <summary>Returns the path where Connect-Glic writes the DPAPI-encrypted key blob.</summary>
-    public static string ResolveDpapiPath(string configDir) =>
-        Path.Combine(configDir, DpapiCredentialFileName);
 
     // configPath is expected to be absolute — the cmdlet layer normalizes user input
     // before calling in; a relative path here would resolve against the process CWD.

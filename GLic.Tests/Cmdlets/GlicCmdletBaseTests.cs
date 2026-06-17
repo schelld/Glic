@@ -100,7 +100,7 @@ public class GlicCmdletBaseTests : IDisposable
     {
         GlicSession.Clear();
         var dir = MakeDir("cfg");
-        // glic.json present but no service-account.dpapi or service-account.json
+        // glic.json present but no service-account.json or GlicVault secret
         File.WriteAllText(
             Path.Combine(dir, "glic.json"),
             """{"customer_id":"C03test","admin_email":"admin@example.com"}""");

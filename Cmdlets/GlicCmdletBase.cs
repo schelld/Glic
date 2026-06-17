@@ -78,9 +78,7 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
         try
         {
             if (Config == null && ServiceAccountPath == null)
-#pragma warning disable CA1416 // ProcessRecord runs in context of PowerShell host
                 TryAutoConnectAsync(Cts.Token).GetAwaiter().GetResult();
-#pragma warning restore CA1416
             RunAsync(Cts.Token).GetAwaiter().GetResult();
         }
         catch (FileNotFoundException ex)
@@ -119,9 +117,6 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
     }
 
     // internal for testability (InternalsVisibleTo GLic.Tests)
-#if NET5_0_OR_GREATER
-    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-#endif
     internal async Task TryAutoConnectAsync(
         CancellationToken ct, IReadOnlyList<string>? probeDirs = null)
     {
@@ -136,11 +131,12 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
 
             var cfg = GlicConfig.Load(configPath);
 
-            // Prefer DPAPI blob (written by Connect-Glic)
-            var dpapiPath = ConfigLocator.ResolveDpapiPath(dir);
-            if (File.Exists(dpapiPath))
+            // Prefer SecretStore vault (set up by Initialize-GlicAuth).
+            // Must run before any await — InvokeCommand requires the pipeline thread.
+            var vaultKey = TryReadVaultSecret(this, "GlicServiceAccountKey");
+            if (!string.IsNullOrEmpty(vaultKey))
             {
-                var json = DpapiStore.Unprotect(File.ReadAllBytes(dpapiPath));
+                var json = System.Text.Encoding.UTF8.GetBytes(vaultKey!);
                 var clients = await ChromeServiceFactory.BuildAsync(cfg.AdminEmail, json);
                 GlicSession.Set(clients, cfg);
                 return;
@@ -158,5 +154,30 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
 
         throw new InvalidOperationException(
             "No GLic session. Run Connect-Glic to authenticate.");
+    }
+
+    /// <summary>
+    /// Attempts to retrieve a plain-text secret from GlicVault via SecretManagement.
+    /// Returns null if the vault or the module is unavailable, or the secret does not exist.
+    /// Safe to call in test contexts where InvokeCommand has no backing runspace.
+    /// Must be called before the first await in any async method (requires the pipeline thread).
+    /// </summary>
+    internal static string? TryReadVaultSecret(PSCmdlet cmdlet, string name)
+    {
+        try
+        {
+            // -ErrorAction Stop converts all errors (command-not-found, vault-not-registered,
+            // secret-not-found) into terminating errors; the PS catch block returns $null cleanly.
+            var results = cmdlet.InvokeCommand.InvokeScript(
+                $"try {{ Get-Secret -Name '{name}' -Vault 'GlicVault' -AsPlainText -ErrorAction Stop }}" +
+                " catch { $null }");
+            return results?.Count > 0 ? results[0]?.BaseObject as string : null;
+        }
+        catch
+        {
+            // Catches NullReferenceException (no CommandRuntime in tests) and any
+            // CmdletInvocationException that escapes the inner PS try/catch.
+            return null;
+        }
     }
 }

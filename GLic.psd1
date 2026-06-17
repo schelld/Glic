@@ -10,7 +10,7 @@
     CompatiblePSEditions   = @('Desktop', 'Core')
 
     FormatsToProcess       = @('GLic.format.ps1xml')
-    FunctionsToExport      = @()
+    FunctionsToExport      = @('Initialize-GlicAuth')
     AliasesToExport        = @()
 
     CmdletsToExport        = @(

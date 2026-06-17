@@ -214,15 +214,4 @@ public class ConfigLocatorTests : IDisposable
         Assert.Equal(Path.Combine(configDir, "skus.json"), result);
     }
 
-    // --- DPAPI path ---
-
-    [Fact]
-    public void ResolveDpapiPath_ReturnsExpectedFilenameInDir()
-    {
-        var dir = MakeDir("cfg");
-
-        var result = ConfigLocator.ResolveDpapiPath(dir);
-
-        Assert.Equal(Path.Combine(dir, "service-account.dpapi"), result);
-    }
 }

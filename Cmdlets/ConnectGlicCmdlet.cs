@@ -19,9 +19,6 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
     private readonly CancellationTokenSource _cts = new CancellationTokenSource();
     protected override void StopProcessing() => _cts.Cancel();
 
-#if NET5_0_OR_GREATER
-    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-#endif
     protected override void ProcessRecord()
     {
         if (GlicSession.IsConnected && !Force.IsPresent) return;
@@ -37,11 +34,14 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
         }
     }
 
-#if NET5_0_OR_GREATER
-    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-#endif
     private async Task ConnectAsync(CancellationToken ct)
     {
+        // Try SecretStore vault first (must run before any await — requires the pipeline thread).
+        var vaultKey = GlicCmdletBase.TryReadVaultSecret(this, "GlicServiceAccountKey");
+        byte[]? vaultBytes = string.IsNullOrEmpty(vaultKey)
+            ? null
+            : System.Text.Encoding.UTF8.GetBytes(vaultKey!);
+
         var email = AdminEmail?.Trim();
         if (string.IsNullOrWhiteSpace(email))
         {
@@ -51,17 +51,37 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
         if (string.IsNullOrWhiteSpace(email))
             throw new InvalidOperationException("Admin email is required.");
 
-        var saPath = ServiceAccountPath?.Trim();
-        while (string.IsNullOrWhiteSpace(saPath) || !File.Exists(saPath))
+        byte[] saBytes;
+        string saSource;
+
+        if (vaultBytes != null)
         {
-            if (!string.IsNullOrWhiteSpace(saPath))
-                Host.UI.WriteLine($"File not found: {saPath}");
-            Host.UI.Write("Path to service-account.json: ");
-            saPath = Host.UI.ReadLine()?.Trim();
+            saBytes  = vaultBytes;
+            saSource = "GlicVault";
+        }
+        else
+        {
+            var saPath = ServiceAccountPath?.Trim();
+            while (string.IsNullOrWhiteSpace(saPath) || !File.Exists(saPath))
+            {
+                if (!string.IsNullOrWhiteSpace(saPath))
+                    Host.UI.WriteLine($"File not found: {saPath}");
+                Host.UI.Write("Path to service-account.json: ");
+                saPath = Host.UI.ReadLine()?.Trim();
+            }
+
+            saBytes = File.ReadAllBytes(saPath!);
+            // Strip UTF-8 BOM that some editors/tools prepend; JsonDocument rejects 0xEF at position 0.
+            if (saBytes.Length >= 3 && saBytes[0] == 0xEF && saBytes[1] == 0xBB && saBytes[2] == 0xBF)
+            {
+                var stripped = new byte[saBytes.Length - 3];
+                Array.Copy(saBytes, 3, stripped, 0, stripped.Length);
+                saBytes = stripped;
+            }
+            saSource = saPath!;
         }
 
-        var saBytes = File.ReadAllBytes(saPath!);
-        ValidateServiceAccountJson(saBytes, saPath!);
+        ValidateServiceAccountJson(saBytes, saSource);
 
         Host.UI.WriteLine("Connecting to Google Workspace...");
         var clients = await ChromeServiceFactory.BuildAsync(email!, saBytes);
@@ -73,9 +93,6 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
         var configDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GLic");
         WriteGlicJson(configDir, customerId, email!);
-
-        var dpapiPath = ConfigLocator.ResolveDpapiPath(configDir);
-        File.WriteAllBytes(dpapiPath, DpapiStore.Protect(saBytes));
 
         GlicSession.Set(clients, new GlicConfig(customerId, email!));
 
