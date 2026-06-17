@@ -4,7 +4,7 @@
     Author                 = 'D. Schell'
     Copyright              = 'Copyright (c) 2026 D. Schell'
     Description            = 'Google Workspace inventory and licensing cmdlets for Flexera ITAM ingestion'
-    RootModule             = if ($PSEdition -eq 'Core') { 'net8.0\GLic.dll' } else { 'net472\GLic.dll' }
+    RootModule             = 'GLic.psm1'
     PowerShellVersion      = '5.1'
     DotNetFrameworkVersion = '4.7.2'
     CompatiblePSEditions   = @('Desktop', 'Core')

@@ -1,10 +1,10 @@
-$moduleDir = $PSScriptRoot
+$fwSubdir = if ($PSEdition -eq 'Core') { 'net8.0' } else { 'net472' }
+$fwDir = Join-Path $PSScriptRoot $fwSubdir
 
-# Store module dir in AppDomain so the delegate can read it without
-# relying on PowerShell scope capture (which is unreliable in PS 5.1 delegates).
-[System.AppDomain]::CurrentDomain.SetData('GLic.ModuleDir', $moduleDir)
+# Store the framework-specific dir so the delegate can find dependency DLLs.
+# PS 5.1 ignores GLic.dll.config binding redirects, so we resolve them here.
+[System.AppDomain]::CurrentDomain.SetData('GLic.ModuleDir', $fwDir)
 
-# PowerShell ignores GLic.dll.config binding redirects; handle them here.
 $null = [System.AppDomain]::CurrentDomain.add_AssemblyResolve(
     [System.ResolveEventHandler] {
         param ($sender, $e)
@@ -18,4 +18,4 @@ $null = [System.AppDomain]::CurrentDomain.add_AssemblyResolve(
     }
 )
 
-Import-Module (Join-Path $moduleDir 'GLic.dll')
+Import-Module (Join-Path $fwDir 'GLic.dll')
