@@ -54,7 +54,7 @@ public class UsersCommandTests
         Assert.Equal("CC-100",                    row.CostCenter);
         Assert.Equal("EMP001",                    row.EmployeeId);
         Assert.Equal("boss@example.com",          row.ManagerEmail);
-        Assert.Equal("j.doe@example.com;jane@example.com", row.EmailAliases);
+        Assert.Equal("j.doe@example.com;jane@example.com", row.Aliases);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class UsersCommandTests
         Assert.Equal("", row.CostCenter);
         Assert.Equal("", row.EmployeeId);
         Assert.Equal("", row.ManagerEmail);
-        Assert.Equal("", row.EmailAliases);
+        Assert.Equal("", row.Aliases);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class UsersCommandTests
 
         var row = GetGlicUsersCmdlet.BuildRow(user, "2026-06-06", "C03fxe4vs");
 
-        Assert.Equal("a@example.com;b@example.com;c@example.com", row.EmailAliases);
+        Assert.Equal("a@example.com;b@example.com;c@example.com", row.Aliases);
     }
 
     [Fact]

@@ -9,9 +9,9 @@ $null = [System.AppDomain]::CurrentDomain.add_AssemblyResolve(
     [System.ResolveEventHandler] {
         param ($sender, $e)
         $dir = [System.AppDomain]::CurrentDomain.GetData('GLic.ModuleDir')
-        $asmName = ([System.Reflection.AssemblyName] $e.Name).Name
-        $candidate = Join-Path $dir "$asmName.dll"
-        if (Test-Path $candidate) {
+        $asmName = [System.Reflection.AssemblyName]::new($e.Name).Name
+        $candidate = [System.IO.Path]::Combine($dir, "$asmName.dll")
+        if ([System.IO.File]::Exists($candidate)) {
             return [System.Reflection.Assembly]::LoadFrom($candidate)
         }
         return $null

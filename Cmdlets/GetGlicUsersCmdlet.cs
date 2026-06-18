@@ -66,7 +66,7 @@ public sealed class GetGlicUsersCmdlet : GlicCmdletBase
                   ?? user.Organizations?.FirstOrDefault();
         var managerEmail = user.Relations?.FirstOrDefault(r => r.Type == "manager")?.Value ?? "";
         var employeeId   = user.ExternalIds?.FirstOrDefault(e => e.Type == "organization")?.Value ?? "";
-        var emailAliases = string.Join(";", user.Aliases ?? []);
+        var aliases      = string.Join(";", user.Aliases ?? []);
 
         return new UserRow(
             ReportDate:       reportDate,
@@ -91,7 +91,7 @@ public sealed class GetGlicUsersCmdlet : GlicCmdletBase
             CostCenter:       org?.CostCenter ?? "",
             EmployeeId:       employeeId,
             ManagerEmail:     managerEmail,
-            EmailAliases:     emailAliases);
+            Aliases:          aliases);
     }
 
     private static DateTimeOffset? ToDto(string? raw)
@@ -123,7 +123,7 @@ public sealed class UserRow
     public string          CostCenter       { get; }
     public string          EmployeeId       { get; }
     public string          ManagerEmail     { get; }
-    public string          EmailAliases     { get; }
+    public string          Aliases          { get; }
 
     public UserRow(
         string ReportDate, string CustomerId, string PrimaryEmail, string FullName,
@@ -131,7 +131,7 @@ public sealed class UserRow
         bool? IsEnrolledIn2Sv, bool? IsEnforcedIn2Sv, string RecoveryEmail, string RecoveryPhone,
         string OrgUnit, bool? IsAdmin, bool? IsDelegatedAdmin, bool? Suspended, bool? Archived,
         string Department, string JobTitle, string CostCenter, string EmployeeId,
-        string ManagerEmail, string EmailAliases)
+        string ManagerEmail, string Aliases)
     {
         this.ReportDate       = ReportDate;
         this.CustomerId       = CustomerId;
@@ -155,6 +155,6 @@ public sealed class UserRow
         this.CostCenter       = CostCenter;
         this.EmployeeId       = EmployeeId;
         this.ManagerEmail     = ManagerEmail;
-        this.EmailAliases     = EmailAliases;
+        this.Aliases          = Aliases;
     }
 }
