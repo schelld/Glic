@@ -54,11 +54,26 @@ public sealed class GetGlicAppsCmdlet : GlicCmdletBase
 }
 
 // Publisher is intentionally empty: countInstalledApps does not return publisher data.
-public record AppRow(
-    string ReportDate,
-    string CustomerId,
-    string DisplayName,
-    string AppId,
-    string AppType,
-    string Publisher,
-    long BrowserDeviceCount);
+public sealed class AppRow
+{
+    public string ReportDate         { get; }
+    public string CustomerId         { get; }
+    public string DisplayName        { get; }
+    public string AppId              { get; }
+    public string AppType            { get; }
+    public string Publisher          { get; }
+    public long   BrowserDeviceCount { get; }
+
+    public AppRow(
+        string ReportDate, string CustomerId, string DisplayName,
+        string AppId, string AppType, string Publisher, long BrowserDeviceCount)
+    {
+        this.ReportDate         = ReportDate;
+        this.CustomerId         = CustomerId;
+        this.DisplayName        = DisplayName;
+        this.AppId              = AppId;
+        this.AppType            = AppType;
+        this.Publisher          = Publisher;
+        this.BrowserDeviceCount = BrowserDeviceCount;
+    }
+}

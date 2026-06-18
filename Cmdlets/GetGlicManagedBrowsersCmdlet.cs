@@ -102,11 +102,65 @@ public sealed class GetGlicManagedBrowsersCmdlet : GlicCmdletBase
                DateTimeStyles.RoundtripKind, out var dt) ? dt : null;
 }
 
-public record ManagedBrowserRow(
-    string ReportDate, string CustomerId, string ProfilePermanentId, string ProfileId,
-    string DisplayName, string UserEmail, string UserId, string AnnotatedUser,
-    string BrowserVersion, string BrowserChannel, string OsPlatformType, string OsVersion,
-    string OsPlatformVersion, string Hostname, string Machine, string DeviceType,
-    string AffiliatedDeviceId, string AnnotatedLocation, long? ExtensionCount, long? PolicyCount,
-    DateTimeOffset? FirstEnrollmentTime, DateTimeOffset? LastActivityTime,
-    DateTimeOffset? LastPolicySyncTime, DateTimeOffset? LastStatusReportTime);
+public sealed class ManagedBrowserRow
+{
+    public string          ReportDate           { get; }
+    public string          CustomerId           { get; }
+    public string          ProfilePermanentId   { get; }
+    public string          ProfileId            { get; }
+    public string          DisplayName          { get; }
+    public string          UserEmail            { get; }
+    public string          UserId               { get; }
+    public string          AnnotatedUser        { get; }
+    public string          BrowserVersion       { get; }
+    public string          BrowserChannel       { get; }
+    public string          OsPlatformType       { get; }
+    public string          OsVersion            { get; }
+    public string          OsPlatformVersion    { get; }
+    public string          Hostname             { get; }
+    public string          Machine              { get; }
+    public string          DeviceType           { get; }
+    public string          AffiliatedDeviceId   { get; }
+    public string          AnnotatedLocation    { get; }
+    public long?           ExtensionCount       { get; }
+    public long?           PolicyCount          { get; }
+    public DateTimeOffset? FirstEnrollmentTime  { get; }
+    public DateTimeOffset? LastActivityTime     { get; }
+    public DateTimeOffset? LastPolicySyncTime   { get; }
+    public DateTimeOffset? LastStatusReportTime { get; }
+
+    public ManagedBrowserRow(
+        string ReportDate, string CustomerId, string ProfilePermanentId, string ProfileId,
+        string DisplayName, string UserEmail, string UserId, string AnnotatedUser,
+        string BrowserVersion, string BrowserChannel, string OsPlatformType, string OsVersion,
+        string OsPlatformVersion, string Hostname, string Machine, string DeviceType,
+        string AffiliatedDeviceId, string AnnotatedLocation, long? ExtensionCount, long? PolicyCount,
+        DateTimeOffset? FirstEnrollmentTime, DateTimeOffset? LastActivityTime,
+        DateTimeOffset? LastPolicySyncTime, DateTimeOffset? LastStatusReportTime)
+    {
+        this.ReportDate           = ReportDate;
+        this.CustomerId           = CustomerId;
+        this.ProfilePermanentId   = ProfilePermanentId;
+        this.ProfileId            = ProfileId;
+        this.DisplayName          = DisplayName;
+        this.UserEmail            = UserEmail;
+        this.UserId               = UserId;
+        this.AnnotatedUser        = AnnotatedUser;
+        this.BrowserVersion       = BrowserVersion;
+        this.BrowserChannel       = BrowserChannel;
+        this.OsPlatformType       = OsPlatformType;
+        this.OsVersion            = OsVersion;
+        this.OsPlatformVersion    = OsPlatformVersion;
+        this.Hostname             = Hostname;
+        this.Machine              = Machine;
+        this.DeviceType           = DeviceType;
+        this.AffiliatedDeviceId   = AffiliatedDeviceId;
+        this.AnnotatedLocation    = AnnotatedLocation;
+        this.ExtensionCount       = ExtensionCount;
+        this.PolicyCount          = PolicyCount;
+        this.FirstEnrollmentTime  = FirstEnrollmentTime;
+        this.LastActivityTime     = LastActivityTime;
+        this.LastPolicySyncTime   = LastPolicySyncTime;
+        this.LastStatusReportTime = LastStatusReportTime;
+    }
+}

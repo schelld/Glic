@@ -28,8 +28,9 @@ public sealed class InvokeGlicDiscoverCmdlet : GlicCmdletBase
                 var req = clients.Licensing.LicenseAssignments.ListForProductAndSku(
                     sku.ProductId, sku.SkuId, cfg.CustomerId);
                 req.MaxResults = 1;
-                await req.ExecuteAsync(ct);
-                foundSkuIds.Add(sku.SkuId);
+                var resp = await req.ExecuteAsync(ct);
+                if (resp.Items?.Count > 0)
+                    foundSkuIds.Add(sku.SkuId);
             }
             catch (Google.GoogleApiException ex)
                 when (ex.HttpStatusCode is HttpStatusCode.NotFound
@@ -144,4 +145,16 @@ public sealed class InvokeGlicDiscoverCmdlet : GlicCmdletBase
     }
 }
 
-public record DiscoverChangeRow(string SkuName, string SkuId, string Status);
+public sealed class DiscoverChangeRow
+{
+    public string SkuName { get; }
+    public string SkuId   { get; }
+    public string Status  { get; }
+
+    public DiscoverChangeRow(string SkuName, string SkuId, string Status)
+    {
+        this.SkuName = SkuName;
+        this.SkuId   = SkuId;
+        this.Status  = Status;
+    }
+}

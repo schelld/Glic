@@ -98,8 +98,42 @@ public sealed class GetGlicTelemetryCmdlet : GlicCmdletBase
                DateTimeStyles.RoundtripKind, out var dt) ? dt : null;
 }
 
-public record TelemetryRow(
-    string DeviceId, string SerialNumber, string Status, string OrgUnitPath,
-    string AnnotatedUser, string OsVersion, string PlatformVersion, string FirmwareVersion,
-    DateTimeOffset? AutoUpdateExpiration, string UpdateState, DateTimeOffset? LastUpdateCheckTime,
-    DateTimeOffset? LastUpdateTime, DateTimeOffset? LastRebootTime, string NewPlatformVersion);
+public sealed class TelemetryRow
+{
+    public string          DeviceId             { get; }
+    public string          SerialNumber         { get; }
+    public string          Status               { get; }
+    public string          OrgUnitPath          { get; }
+    public string          AnnotatedUser        { get; }
+    public string          OsVersion            { get; }
+    public string          PlatformVersion      { get; }
+    public string          FirmwareVersion      { get; }
+    public DateTimeOffset? AutoUpdateExpiration { get; }
+    public string          UpdateState          { get; }
+    public DateTimeOffset? LastUpdateCheckTime  { get; }
+    public DateTimeOffset? LastUpdateTime       { get; }
+    public DateTimeOffset? LastRebootTime       { get; }
+    public string          NewPlatformVersion   { get; }
+
+    public TelemetryRow(
+        string DeviceId, string SerialNumber, string Status, string OrgUnitPath,
+        string AnnotatedUser, string OsVersion, string PlatformVersion, string FirmwareVersion,
+        DateTimeOffset? AutoUpdateExpiration, string UpdateState, DateTimeOffset? LastUpdateCheckTime,
+        DateTimeOffset? LastUpdateTime, DateTimeOffset? LastRebootTime, string NewPlatformVersion)
+    {
+        this.DeviceId             = DeviceId;
+        this.SerialNumber         = SerialNumber;
+        this.Status               = Status;
+        this.OrgUnitPath          = OrgUnitPath;
+        this.AnnotatedUser        = AnnotatedUser;
+        this.OsVersion            = OsVersion;
+        this.PlatformVersion      = PlatformVersion;
+        this.FirmwareVersion      = FirmwareVersion;
+        this.AutoUpdateExpiration = AutoUpdateExpiration;
+        this.UpdateState          = UpdateState;
+        this.LastUpdateCheckTime  = LastUpdateCheckTime;
+        this.LastUpdateTime       = LastUpdateTime;
+        this.LastRebootTime       = LastRebootTime;
+        this.NewPlatformVersion   = NewPlatformVersion;
+    }
+}

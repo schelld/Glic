@@ -3,7 +3,7 @@
     GUID                   = 'de3505a7-d885-4aaf-9672-8656fbdd236d'
     Author                 = 'D. Schell'
     Copyright              = 'Copyright (c) 2026 D. Schell'
-    Description            = 'Google Workspace inventory and licensing cmdlets for Flexera ITAM ingestion'
+    Description            = 'Google Workspace inventory and licensing cmdlets for IT_Asset_Management ITAM ingestion'
     RootModule             = 'GLic.psm1'
     PowerShellVersion      = '5.1'
     DotNetFrameworkVersion = '4.7.2'

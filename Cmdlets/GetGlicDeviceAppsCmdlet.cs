@@ -101,6 +101,26 @@ public sealed class GetGlicDeviceAppsCmdlet : GlicCmdletBase
             DisplayName: app.DisplayName    ?? "");
 }
 
-public record DeviceAppRow(
-    string ReportDate, string CustomerId, string DeviceId, string Machine,
-    string AppId, string AppType, string DisplayName);
+public sealed class DeviceAppRow
+{
+    public string ReportDate  { get; }
+    public string CustomerId  { get; }
+    public string DeviceId    { get; }
+    public string Machine     { get; }
+    public string AppId       { get; }
+    public string AppType     { get; }
+    public string DisplayName { get; }
+
+    public DeviceAppRow(
+        string ReportDate, string CustomerId, string DeviceId, string Machine,
+        string AppId, string AppType, string DisplayName)
+    {
+        this.ReportDate  = ReportDate;
+        this.CustomerId  = CustomerId;
+        this.DeviceId    = DeviceId;
+        this.Machine     = Machine;
+        this.AppId       = AppId;
+        this.AppType     = AppType;
+        this.DisplayName = DisplayName;
+    }
+}

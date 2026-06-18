@@ -103,6 +103,30 @@ public sealed class GetGlicBrowserExtensionsCmdlet : GlicCmdletBase
             DisplayName:        app.DisplayName            ?? "");
 }
 
-public record BrowserExtensionRow(
-    string ReportDate, string CustomerId, string ProfilePermanentId, string ProfileId,
-    string Email, string ProfileOrgUnitId, string AppId, string AppType, string DisplayName);
+public sealed class BrowserExtensionRow
+{
+    public string ReportDate         { get; }
+    public string CustomerId         { get; }
+    public string ProfilePermanentId { get; }
+    public string ProfileId          { get; }
+    public string Email              { get; }
+    public string ProfileOrgUnitId   { get; }
+    public string AppId              { get; }
+    public string AppType            { get; }
+    public string DisplayName        { get; }
+
+    public BrowserExtensionRow(
+        string ReportDate, string CustomerId, string ProfilePermanentId, string ProfileId,
+        string Email, string ProfileOrgUnitId, string AppId, string AppType, string DisplayName)
+    {
+        this.ReportDate         = ReportDate;
+        this.CustomerId         = CustomerId;
+        this.ProfilePermanentId = ProfilePermanentId;
+        this.ProfileId          = ProfileId;
+        this.Email              = Email;
+        this.ProfileOrgUnitId   = ProfileOrgUnitId;
+        this.AppId              = AppId;
+        this.AppType            = AppType;
+        this.DisplayName        = DisplayName;
+    }
+}

@@ -86,7 +86,7 @@ public sealed class GetGlicLicensesCmdlet : GlicCmdletBase
             {
                 WriteWarning(
                     $"SKU '{sku.SkuName}' ({sku.SkuId}) returned no individual assignments — skipped. " +
-                    "If this is a domain-wide license, record it manually in Flexera.");
+                    "If this is a domain-wide license, record it manually in IT_Asset_Management.");
                 continue;
             }
 
@@ -123,8 +123,44 @@ public sealed class GetGlicLicensesCmdlet : GlicCmdletBase
                DateTimeStyles.RoundtripKind, out var dt) ? dt : null;
 }
 
-public record LicenseRow(
-    string ReportDate, string CustomerId, string UserEmail, string FullName,
-    string GivenName, string FamilyName, string OrgUnit, bool? IsAdmin, bool? Suspended,
-    DateTimeOffset? LastLoginTime, string ProductId, string ProductName, string SkuId,
-    string SkuName, string AssignmentStatus);
+public sealed class LicenseRow
+{
+    public string         ReportDate       { get; }
+    public string         CustomerId       { get; }
+    public string         UserEmail        { get; }
+    public string         FullName         { get; }
+    public string         GivenName        { get; }
+    public string         FamilyName       { get; }
+    public string         OrgUnit          { get; }
+    public bool?          IsAdmin          { get; }
+    public bool?          Suspended        { get; }
+    public DateTimeOffset? LastLoginTime   { get; }
+    public string         ProductId        { get; }
+    public string         ProductName      { get; }
+    public string         SkuId            { get; }
+    public string         SkuName          { get; }
+    public string         AssignmentStatus { get; }
+
+    public LicenseRow(
+        string ReportDate, string CustomerId, string UserEmail, string FullName,
+        string GivenName, string FamilyName, string OrgUnit, bool? IsAdmin, bool? Suspended,
+        DateTimeOffset? LastLoginTime, string ProductId, string ProductName, string SkuId,
+        string SkuName, string AssignmentStatus)
+    {
+        this.ReportDate       = ReportDate;
+        this.CustomerId       = CustomerId;
+        this.UserEmail        = UserEmail;
+        this.FullName         = FullName;
+        this.GivenName        = GivenName;
+        this.FamilyName       = FamilyName;
+        this.OrgUnit          = OrgUnit;
+        this.IsAdmin          = IsAdmin;
+        this.Suspended        = Suspended;
+        this.LastLoginTime    = LastLoginTime;
+        this.ProductId        = ProductId;
+        this.ProductName      = ProductName;
+        this.SkuId            = SkuId;
+        this.SkuName          = SkuName;
+        this.AssignmentStatus = AssignmentStatus;
+    }
+}

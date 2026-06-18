@@ -79,10 +79,62 @@ public sealed class GetGlicDevicesCmdlet : GlicCmdletBase
                DateTimeStyles.RoundtripKind, out var dt) ? dt : null;
 }
 
-public record DeviceRow(
-    string ReportDate, string CustomerId, string DeviceId, string SerialNumber,
-    string Model, string Status, string OrgUnitPath, string AnnotatedUser,
-    string LastSyncUser, string AnnotatedLocation, DateTimeOffset? LastSync, DateTimeOffset? EnrollmentTime,
-    string OsVersion, string MacAddress, string EthernetMacAddress, string LastKnownIp,
-    string AnnotatedAssetId, string OrderNumber, string PlatformVersion, string FirmwareVersion,
-    string BootMode, string Notes, string Meid);
+public sealed class DeviceRow
+{
+    public string         ReportDate         { get; }
+    public string         CustomerId         { get; }
+    public string         DeviceId           { get; }
+    public string         SerialNumber       { get; }
+    public string         Model              { get; }
+    public string         Status             { get; }
+    public string         OrgUnitPath        { get; }
+    public string         AnnotatedUser      { get; }
+    public string         LastSyncUser       { get; }
+    public string         AnnotatedLocation  { get; }
+    public DateTimeOffset? LastSync          { get; }
+    public DateTimeOffset? EnrollmentTime    { get; }
+    public string         OsVersion          { get; }
+    public string         MacAddress         { get; }
+    public string         EthernetMacAddress { get; }
+    public string         LastKnownIp        { get; }
+    public string         AnnotatedAssetId   { get; }
+    public string         OrderNumber        { get; }
+    public string         PlatformVersion    { get; }
+    public string         FirmwareVersion    { get; }
+    public string         BootMode           { get; }
+    public string         Notes              { get; }
+    public string         Meid               { get; }
+
+    public DeviceRow(
+        string ReportDate, string CustomerId, string DeviceId, string SerialNumber,
+        string Model, string Status, string OrgUnitPath, string AnnotatedUser,
+        string LastSyncUser, string AnnotatedLocation, DateTimeOffset? LastSync, DateTimeOffset? EnrollmentTime,
+        string OsVersion, string MacAddress, string EthernetMacAddress, string LastKnownIp,
+        string AnnotatedAssetId, string OrderNumber, string PlatformVersion, string FirmwareVersion,
+        string BootMode, string Notes, string Meid)
+    {
+        this.ReportDate         = ReportDate;
+        this.CustomerId         = CustomerId;
+        this.DeviceId           = DeviceId;
+        this.SerialNumber       = SerialNumber;
+        this.Model              = Model;
+        this.Status             = Status;
+        this.OrgUnitPath        = OrgUnitPath;
+        this.AnnotatedUser      = AnnotatedUser;
+        this.LastSyncUser       = LastSyncUser;
+        this.AnnotatedLocation  = AnnotatedLocation;
+        this.LastSync           = LastSync;
+        this.EnrollmentTime     = EnrollmentTime;
+        this.OsVersion          = OsVersion;
+        this.MacAddress         = MacAddress;
+        this.EthernetMacAddress = EthernetMacAddress;
+        this.LastKnownIp        = LastKnownIp;
+        this.AnnotatedAssetId   = AnnotatedAssetId;
+        this.OrderNumber        = OrderNumber;
+        this.PlatformVersion    = PlatformVersion;
+        this.FirmwareVersion    = FirmwareVersion;
+        this.BootMode           = BootMode;
+        this.Notes              = Notes;
+        this.Meid               = Meid;
+    }
+}

@@ -112,6 +112,7 @@ The service account must have **Domain-Wide Delegation** granted in Google Admin
 | `https://www.googleapis.com/auth/chrome.management.reports.readonly` | `Get-GlicApps`, `Get-GlicDeviceApps`, `Get-GlicBrowserExtensions` |
 | `https://www.googleapis.com/auth/chrome.management.telemetry.readonly` | `Get-GlicHardware`, `Get-GlicTelemetry` |
 | `https://www.googleapis.com/auth/chrome.management.profiles.readonly` | `Get-GlicManagedBrowsers` |
+| `https://www.googleapis.com/auth/admin.directory.customer.readonly` | `Connect-Glic` (tenant validation) |
 | `https://www.googleapis.com/auth/admin.directory.device.chromeos.readonly` | `Get-GlicDevices`, `Get-GlicHardware`, `Get-GlicTelemetry` |
 | `https://www.googleapis.com/auth/admin.directory.user.readonly` | `Get-GlicUsers`, `Get-GlicLicenses` |
 | `https://www.googleapis.com/auth/admin.directory.orgunit.readonly` | `Get-GlicManagedBrowsers`, `Get-GlicDeviceApps`, `Get-GlicBrowserExtensions` (OrgUnit path resolution) |

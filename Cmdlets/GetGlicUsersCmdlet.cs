@@ -99,10 +99,62 @@ public sealed class GetGlicUsersCmdlet : GlicCmdletBase
                DateTimeStyles.RoundtripKind, out var dt) ? dt : null;
 }
 
-public record UserRow(
-    string ReportDate, string CustomerId, string PrimaryEmail, string FullName,
-    string GivenName, string FamilyName, DateTimeOffset? CreationTime, DateTimeOffset? LastLoginTime,
-    bool? IsEnrolledIn2Sv, bool? IsEnforcedIn2Sv, string RecoveryEmail, string RecoveryPhone,
-    string OrgUnit, bool? IsAdmin, bool? IsDelegatedAdmin, bool? Suspended, bool? Archived,
-    string Department, string JobTitle, string CostCenter, string EmployeeId,
-    string ManagerEmail, string Aliases);
+public sealed class UserRow
+{
+    public string          ReportDate       { get; }
+    public string          CustomerId       { get; }
+    public string          PrimaryEmail     { get; }
+    public string          FullName         { get; }
+    public string          GivenName        { get; }
+    public string          FamilyName       { get; }
+    public DateTimeOffset? CreationTime     { get; }
+    public DateTimeOffset? LastLoginTime    { get; }
+    public bool?           IsEnrolledIn2Sv  { get; }
+    public bool?           IsEnforcedIn2Sv  { get; }
+    public string          RecoveryEmail    { get; }
+    public string          RecoveryPhone    { get; }
+    public string          OrgUnit          { get; }
+    public bool?           IsAdmin          { get; }
+    public bool?           IsDelegatedAdmin { get; }
+    public bool?           Suspended        { get; }
+    public bool?           Archived         { get; }
+    public string          Department       { get; }
+    public string          JobTitle         { get; }
+    public string          CostCenter       { get; }
+    public string          EmployeeId       { get; }
+    public string          ManagerEmail     { get; }
+    public string          Aliases          { get; }
+
+    public UserRow(
+        string ReportDate, string CustomerId, string PrimaryEmail, string FullName,
+        string GivenName, string FamilyName, DateTimeOffset? CreationTime, DateTimeOffset? LastLoginTime,
+        bool? IsEnrolledIn2Sv, bool? IsEnforcedIn2Sv, string RecoveryEmail, string RecoveryPhone,
+        string OrgUnit, bool? IsAdmin, bool? IsDelegatedAdmin, bool? Suspended, bool? Archived,
+        string Department, string JobTitle, string CostCenter, string EmployeeId,
+        string ManagerEmail, string Aliases)
+    {
+        this.ReportDate       = ReportDate;
+        this.CustomerId       = CustomerId;
+        this.PrimaryEmail     = PrimaryEmail;
+        this.FullName         = FullName;
+        this.GivenName        = GivenName;
+        this.FamilyName       = FamilyName;
+        this.CreationTime     = CreationTime;
+        this.LastLoginTime    = LastLoginTime;
+        this.IsEnrolledIn2Sv  = IsEnrolledIn2Sv;
+        this.IsEnforcedIn2Sv  = IsEnforcedIn2Sv;
+        this.RecoveryEmail    = RecoveryEmail;
+        this.RecoveryPhone    = RecoveryPhone;
+        this.OrgUnit          = OrgUnit;
+        this.IsAdmin          = IsAdmin;
+        this.IsDelegatedAdmin = IsDelegatedAdmin;
+        this.Suspended        = Suspended;
+        this.Archived         = Archived;
+        this.Department       = Department;
+        this.JobTitle         = JobTitle;
+        this.CostCenter       = CostCenter;
+        this.EmployeeId       = EmployeeId;
+        this.ManagerEmail     = ManagerEmail;
+        this.Aliases          = Aliases;
+    }
+}

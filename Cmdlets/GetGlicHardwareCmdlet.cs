@@ -171,22 +171,119 @@ public sealed class GetGlicHardwareCmdlet : GlicCmdletBase
         => items is null or { Count: 0 } ? "" : string.Join(";", items.Select(i => selector(i) ?? ""));
 }
 
-public record HardwareRow(
-    string ReportDate, string CustomerId, string DeviceId, string SerialNumber,
-    string CpuModel, string CpuArchitecture, long? CpuMaxClockSpeedKhz,
-    long? RamTotalBytes, long? TotalDiskBytes, string DiskModels, string DiskTypes,
-    string DiskSizeBytes, string DiskHealths, string DiskManufacturers,
-    string BatteryManufacturer, long? BatteryDesignCapacity, long? BatteryFullChargeCapacity,
-    string BatteryHealth, long? BatteryCycleCount, string NetworkMacAddresses, string NetworkTypes,
-    string GpuAdapter, string GpuDriverVersion, string OsUpdateState, DateTimeOffset? OsLastRebootTime,
-    DateTimeOffset? AutoUpdateExpiration,
-    string Manufacturer, string Model, string Status, string OrgUnitPath, string AnnotatedUser,
-    string LastSyncUser, string AnnotatedLocation, string AnnotatedAssetId, DateTimeOffset? EnrollmentTime, string OsVersion,
-    DateTimeOffset? LastSync, string MacAddress, string EthernetMacAddress, string LastKnownIp,
-    string OrderNumber, string PlatformVersion, string FirmwareVersion,
-    string BootMode, string Notes, string Meid)
+public sealed class HardwareRow
 {
-    public double? RamGb  // binary GiB, labelled GB per IT/Flexera convention
+    public string          ReportDate                { get; }
+    public string          CustomerId                { get; }
+    public string          DeviceId                  { get; }
+    public string          SerialNumber              { get; }
+    public string          CpuModel                  { get; }
+    public string          CpuArchitecture           { get; }
+    public long?           CpuMaxClockSpeedKhz       { get; }
+    public long?           RamTotalBytes             { get; }
+    public long?           TotalDiskBytes            { get; }
+    public string          DiskModels                { get; }
+    public string          DiskTypes                 { get; }
+    public string          DiskSizeBytes             { get; }
+    public string          DiskHealths               { get; }
+    public string          DiskManufacturers         { get; }
+    public string          BatteryManufacturer       { get; }
+    public long?           BatteryDesignCapacity     { get; }
+    public long?           BatteryFullChargeCapacity { get; }
+    public string          BatteryHealth             { get; }
+    public long?           BatteryCycleCount         { get; }
+    public string          NetworkMacAddresses       { get; }
+    public string          NetworkTypes              { get; }
+    public string          GpuAdapter                { get; }
+    public string          GpuDriverVersion          { get; }
+    public string          OsUpdateState             { get; }
+    public DateTimeOffset? OsLastRebootTime          { get; }
+    public DateTimeOffset? AutoUpdateExpiration      { get; }
+    public string          Manufacturer              { get; }
+    public string          Model                     { get; }
+    public string          Status                    { get; }
+    public string          OrgUnitPath               { get; }
+    public string          AnnotatedUser             { get; }
+    public string          LastSyncUser              { get; }
+    public string          AnnotatedLocation         { get; }
+    public string          AnnotatedAssetId          { get; }
+    public DateTimeOffset? EnrollmentTime            { get; }
+    public string          OsVersion                 { get; }
+    public DateTimeOffset? LastSync                  { get; }
+    public string          MacAddress                { get; }
+    public string          EthernetMacAddress        { get; }
+    public string          LastKnownIp               { get; }
+    public string          OrderNumber               { get; }
+    public string          PlatformVersion           { get; }
+    public string          FirmwareVersion           { get; }
+    public string          BootMode                  { get; }
+    public string          Notes                     { get; }
+    public string          Meid                      { get; }
+
+    public HardwareRow(
+        string ReportDate, string CustomerId, string DeviceId, string SerialNumber,
+        string CpuModel, string CpuArchitecture, long? CpuMaxClockSpeedKhz,
+        long? RamTotalBytes, long? TotalDiskBytes, string DiskModels, string DiskTypes,
+        string DiskSizeBytes, string DiskHealths, string DiskManufacturers,
+        string BatteryManufacturer, long? BatteryDesignCapacity, long? BatteryFullChargeCapacity,
+        string BatteryHealth, long? BatteryCycleCount, string NetworkMacAddresses, string NetworkTypes,
+        string GpuAdapter, string GpuDriverVersion, string OsUpdateState, DateTimeOffset? OsLastRebootTime,
+        DateTimeOffset? AutoUpdateExpiration,
+        string Manufacturer, string Model, string Status, string OrgUnitPath, string AnnotatedUser,
+        string LastSyncUser, string AnnotatedLocation, string AnnotatedAssetId, DateTimeOffset? EnrollmentTime, string OsVersion,
+        DateTimeOffset? LastSync, string MacAddress, string EthernetMacAddress, string LastKnownIp,
+        string OrderNumber, string PlatformVersion, string FirmwareVersion,
+        string BootMode, string Notes, string Meid)
+    {
+        this.ReportDate                = ReportDate;
+        this.CustomerId                = CustomerId;
+        this.DeviceId                  = DeviceId;
+        this.SerialNumber              = SerialNumber;
+        this.CpuModel                  = CpuModel;
+        this.CpuArchitecture           = CpuArchitecture;
+        this.CpuMaxClockSpeedKhz       = CpuMaxClockSpeedKhz;
+        this.RamTotalBytes             = RamTotalBytes;
+        this.TotalDiskBytes            = TotalDiskBytes;
+        this.DiskModels                = DiskModels;
+        this.DiskTypes                 = DiskTypes;
+        this.DiskSizeBytes             = DiskSizeBytes;
+        this.DiskHealths               = DiskHealths;
+        this.DiskManufacturers         = DiskManufacturers;
+        this.BatteryManufacturer       = BatteryManufacturer;
+        this.BatteryDesignCapacity     = BatteryDesignCapacity;
+        this.BatteryFullChargeCapacity = BatteryFullChargeCapacity;
+        this.BatteryHealth             = BatteryHealth;
+        this.BatteryCycleCount         = BatteryCycleCount;
+        this.NetworkMacAddresses       = NetworkMacAddresses;
+        this.NetworkTypes              = NetworkTypes;
+        this.GpuAdapter                = GpuAdapter;
+        this.GpuDriverVersion          = GpuDriverVersion;
+        this.OsUpdateState             = OsUpdateState;
+        this.OsLastRebootTime          = OsLastRebootTime;
+        this.AutoUpdateExpiration      = AutoUpdateExpiration;
+        this.Manufacturer              = Manufacturer;
+        this.Model                     = Model;
+        this.Status                    = Status;
+        this.OrgUnitPath               = OrgUnitPath;
+        this.AnnotatedUser             = AnnotatedUser;
+        this.LastSyncUser              = LastSyncUser;
+        this.AnnotatedLocation         = AnnotatedLocation;
+        this.AnnotatedAssetId          = AnnotatedAssetId;
+        this.EnrollmentTime            = EnrollmentTime;
+        this.OsVersion                 = OsVersion;
+        this.LastSync                  = LastSync;
+        this.MacAddress                = MacAddress;
+        this.EthernetMacAddress        = EthernetMacAddress;
+        this.LastKnownIp               = LastKnownIp;
+        this.OrderNumber               = OrderNumber;
+        this.PlatformVersion           = PlatformVersion;
+        this.FirmwareVersion           = FirmwareVersion;
+        this.BootMode                  = BootMode;
+        this.Notes                     = Notes;
+        this.Meid                      = Meid;
+    }
+
+    public double? RamGb  // binary GiB, labelled GB per IT/IT_Asset_Management convention
         => RamTotalBytes.HasValue
             ? Math.Round(RamTotalBytes.Value / 1_073_741_824.0, 2)
             : null;
