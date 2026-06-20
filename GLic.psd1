@@ -1,5 +1,5 @@
 @{
-    ModuleVersion          = '1.0.0'
+    ModuleVersion          = '1.0.2'
     GUID                   = 'de3505a7-d885-4aaf-9672-8656fbdd236d'
     Author                 = 'D. Schell'
     Copyright              = 'Copyright (c) 2026 D. Schell'
@@ -10,7 +10,7 @@
     CompatiblePSEditions   = @('Desktop', 'Core')
 
     FormatsToProcess       = @('GLic.format.ps1xml')
-    FunctionsToExport      = @('Initialize-GlicAuth')
+    FunctionsToExport      = @()
     AliasesToExport        = @()
 
     CmdletsToExport        = @(
