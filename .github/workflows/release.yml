@@ -18,8 +18,11 @@ jobs:
         with:
           dotnet-version: '8.x'
 
+      - name: Compute version
+        run: echo "VERSION=$("${{ github.ref_name }}" -replace '^v','')" >> $env:GITHUB_ENV
+
       - name: Build
-        run: dotnet build --configuration Release -p:Version=${{ github.ref_name }}
+        run: dotnet build --configuration Release -p:Version=${{ env.VERSION }}
 
       - name: Test
         run: dotnet test GLic.Tests --configuration Release
