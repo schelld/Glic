@@ -22,3 +22,8 @@ jobs:
 
       - name: Test
         run: dotnet test GLic.Tests
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GLic
+          path: module\GLic\
