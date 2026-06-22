@@ -1,0 +1,34 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Build
+        run: dotnet build --configuration Release -p:Version=${{ github.ref_name }}
+
+      - name: Test
+        run: dotnet test GLic.Tests --configuration Release
+
+      - name: Package
+        run: Compress-Archive -Path module\GLic\* -DestinationPath GLic-${{ github.ref_name }}.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: GLic-${{ github.ref_name }}.zip
+          generate_release_notes: true
