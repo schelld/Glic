@@ -46,8 +46,8 @@ if ($hits) {
 Write-Host 'Testing module manifest...'
 try {
     $manifest = Test-ModuleManifest (Join-Path $Path 'GLic.psd1') -ErrorAction Stop
-    if ($manifest.ExportedCmdlets.Count -ne 10) {
-        Write-Error "Manifest exports $($manifest.ExportedCmdlets.Count) cmdlet(s); expected 10."
+    if ($manifest.ExportedCmdlets.Count -ne 11) {
+        Write-Error "Manifest exports $($manifest.ExportedCmdlets.Count) cmdlet(s); expected 11."
         $failed++
     } else {
         Write-Host "  Manifest ok: $($manifest.Name) $($manifest.Version), $($manifest.ExportedCmdlets.Count) cmdlets"

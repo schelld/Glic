@@ -131,7 +131,7 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
 
             var cfg = GlicConfig.Load(configPath);
 
-            // Prefer SecretStore vault (set up by Initialize-GlicAuth).
+            // Prefer SecretStore vault (set up by Connect-Glic -KeyPath).
             // Must run before any await — InvokeCommand requires the pipeline thread.
             var vaultKey = TryReadVaultSecret(this, "GlicServiceAccountKey");
             if (!string.IsNullOrEmpty(vaultKey))

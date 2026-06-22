@@ -4,13 +4,17 @@ Native PowerShell binary module that queries Google Workspace APIs (Chrome Manag
 
 ## Installation
 
-### PowerShell Gallery Not Yet Implemented
+### PowerShell Gallery
+
+```powershell
+Install-Module GLic -Scope CurrentUser
+```
 
 ### Manual (ZIP or network share)
 
 Copy the `GLic` folder to any location in your `$env:PSModulePath`. Two setup paths are supported:
 
-**Vault path (recommended)** — stores the service-account key in a password-free SecretStore vault. Requires `Microsoft.PowerShell.SecretManagement` and `Microsoft.PowerShell.SecretStore`:
+**Vault path (recommended)** — stores the service-account key in a password-free SecretStore vault so subsequent sessions reconnect silently without the key file. Requires `Microsoft.PowerShell.SecretManagement` and `Microsoft.PowerShell.SecretStore`:
 
 ```powershell
 # Install vault modules (one-time, requires internet)
@@ -18,14 +22,11 @@ Install-Module Microsoft.PowerShell.SecretManagement, Microsoft.PowerShell.Secre
 
 Import-Module GLic
 
-# Store key in vault (one-time per machine/user)
-Initialize-GlicAuth -KeyPath C:\keys\sa.json
-
-# Authenticate and write glic.json (one-time per machine/user)
-Connect-Glic -AdminEmail admin@yourdomain.com
+# Store key in vault and authenticate (one-time per machine/user)
+Connect-Glic -KeyPath C:\keys\sa.json -AdminEmail admin@yourdomain.com
 ```
 
-**File path** — no extra modules needed; works on any Windows machine. The service-account key is not stored by `Connect-Glic` itself — either place `service-account.json` in `%APPDATA%\GLic\` for auto-connect, or pass `-ServiceAccountPath` each time:
+**File path** — no extra modules needed; works on any Windows machine. Place `service-account.json` in `%APPDATA%\GLic\` for auto-connect, or pass `-ServiceAccountPath` each time:
 
 ```powershell
 Import-Module GLic
@@ -37,9 +38,9 @@ Connect-Glic
 Connect-Glic -AdminEmail admin@yourdomain.com -ServiceAccountPath C:\keys\sa.json
 ```
 
-`Connect-Glic` calls the Directory API to derive the customer ID and writes `glic.json` to `%APPDATA%\GLic\`. When using the vault path, it reads the key from `GlicVault` automatically — no key path prompt. Subsequent PowerShell sessions auto-connect silently in either case.
+`Connect-Glic` calls the Directory API to derive the customer ID and writes `glic.json` to `%APPDATA%\GLic\`. When `-KeyPath` is supplied, it also stores the key in `GlicVault` and reads from it automatically in future sessions. Subsequent PowerShell sessions auto-connect silently in either case.
 
-To update credentials (new key or new admin account), re-run `Initialize-GlicAuth` with the new key, then `Connect-Glic -Force`.
+To update credentials (new key or new admin account), re-run `Connect-Glic -KeyPath <new-key-path> -Force`.
 
 ### Uninstall
 
@@ -51,8 +52,7 @@ Remove the module folder from `$env:PSModulePath`, delete `%APPDATA%\GLic\`, and
 # One-time setup (vault path — recommended)
 Install-Module Microsoft.PowerShell.SecretManagement, Microsoft.PowerShell.SecretStore -Scope CurrentUser
 Import-Module GLic
-Initialize-GlicAuth -KeyPath C:\keys\sa.json
-Connect-Glic -AdminEmail admin@yourdomain.com
+Connect-Glic -KeyPath C:\keys\sa.json -AdminEmail admin@yourdomain.com
 
 # Every session after that — auto-connects silently
 Get-GlicDevices | Export-Csv devices.csv -NoTypeInformation
@@ -73,8 +73,7 @@ Get-GlicHardware | ConvertTo-Json | Out-File hardware.json
    Import-Module .\module\GLic
 
    # Vault path (recommended — install prereqs first):
-   Initialize-GlicAuth -KeyPath .\service-account.json
-   Connect-Glic -AdminEmail admin@yourdomain.com
+   Connect-Glic -KeyPath .\service-account.json -AdminEmail admin@yourdomain.com
 
    # File path alternative (no extra modules needed):
    # Connect-Glic   # prompts for admin email + path to service-account.json
@@ -93,13 +92,13 @@ Get-GlicHardware | ConvertTo-Json | Out-File hardware.json
 Install-Module Microsoft.PowerShell.SecretManagement, Microsoft.PowerShell.SecretStore -Scope CurrentUser
 ```
 
-`Initialize-GlicAuth` throws a descriptive error if these modules are missing; they are not listed in the module manifest and are not auto-installed.
+`Connect-Glic -KeyPath` throws a descriptive error if these modules are missing when vault storage is requested; they are not listed in the module manifest and are not auto-installed.
 
-**Credential files** — `glic.json` and (file path) `service-account.dpapi` are written to `%APPDATA%\GLic\` by `Connect-Glic`. `GlicVault` is created in the current user's SecretStore by `Initialize-GlicAuth`.
+**Credential files** — `glic.json` is written to `%APPDATA%\GLic\` by `Connect-Glic`. `GlicVault` is created in the current user's SecretStore by `Connect-Glic -KeyPath`.
 
 | File / Store | Purpose | Created by |
 |---|---|---|
-| `GlicVault` (SecretStore) | Service-account key, stored passwordless | `Initialize-GlicAuth` |
+| `GlicVault` (SecretStore) | Service-account key, stored passwordless | `Connect-Glic -KeyPath` |
 | `glic.json` | Workspace config: `customer_id` and `admin_email` | `Connect-Glic` |
 | `skus.json` | License SKU list — bundled defaults; refresh with `Invoke-GlicDiscover` | `Invoke-GlicDiscover` |
 
@@ -131,7 +130,7 @@ The service account must have **Domain-Wide Delegation** granted in Google Admin
 The service-account credential is located by trying, in order:
 
 1. `-ServiceAccountPath <path>` parameter
-2. `GlicVault` SecretStore vault — `GlicServiceAccountKey` secret (written by `Initialize-GlicAuth`)
+2. `GlicVault` SecretStore vault — `GlicServiceAccountKey` secret (written by `Connect-Glic -KeyPath`)
 3. `credential_path` key in `glic.json` (relative paths resolve against the `glic.json` directory)
 4. `service-account.json` next to the resolved `glic.json`
 5. The module directory
@@ -143,11 +142,10 @@ module directory, so refreshes work without admin rights and survive module upda
 ## Build and Import
 
 ```powershell
-dotnet build                                    # compiles + stages module\GLic\
-Import-Module .\module\GLic                     # loads cmdlets + Initialize-GlicAuth function
-Initialize-GlicAuth -KeyPath .\sa.json          # vault path: store key (vault path)
-Connect-Glic -AdminEmail admin@yourdomain.com   # authenticate + write glic.json
-Get-Command -Module GLic                        # verify
+dotnet build                                                          # compiles + stages module\GLic\
+Import-Module .\module\GLic                                           # loads cmdlets
+Connect-Glic -KeyPath .\sa.json -AdminEmail admin@yourdomain.com      # vault path: store + authenticate
+Get-Command -Module GLic                                              # verify
 ```
 
 ## Cmdlet Reference
@@ -161,45 +159,26 @@ All data cmdlets share two base parameters:
 
 ---
 
-### `Initialize-GlicAuth`
-
-> **PowerShell function** (not a compiled cmdlet — `Get-Command -CommandType Cmdlet` will not list it; use `Get-Command Initialize-GlicAuth`).
-
-One-time vault setup. Validates the service-account JSON file, registers `GlicVault` backed by `Microsoft.PowerShell.SecretStore` (passwordless, current user), and stores the key. Run this before `Connect-Glic` when using the vault path.
-
-```powershell
-Initialize-GlicAuth -KeyPath C:\keys\sa.json
-Initialize-GlicAuth -KeyPath C:\keys\sa.json -Verbose   # show each step
-```
-
-| Parameter | Type | Description |
-|---|---|---|
-| `-KeyPath` | string (Mandatory) | Path to `service-account.json` downloaded from Google Cloud Console |
-
-**Requires:** `Microsoft.PowerShell.SecretManagement` and `Microsoft.PowerShell.SecretStore` installed (`Install-Module` — not auto-installed by GLic).
-
-**Output:** Nothing on the pipeline. Writes a confirmation line to the host on success. Throws on any validation or vault error.
-
----
-
 ### `Connect-Glic`
 
 Authenticates to Google Workspace and persists credentials for the current user. Must be run once per machine before any `Get-Glic*` cmdlet. All subsequent cmdlets auto-connect silently.
 
-When `GlicVault` is configured (via `Initialize-GlicAuth`), `Connect-Glic` reads the key from the vault and does not prompt for a key path. When no vault is present, it prompts for the key file path (or reads from `-ServiceAccountPath`).
+When `-KeyPath` is supplied, the key is validated and stored in `GlicVault` (SecretStore) before connecting — this is the vault path and requires `Microsoft.PowerShell.SecretManagement` and `Microsoft.PowerShell.SecretStore`. When `GlicVault` already has the key (from a prior `-KeyPath` run), `Connect-Glic` reads from it automatically with no key path prompt. When no vault is present, it prompts for the key file path or reads from `-ServiceAccountPath`.
 
 ```powershell
-Connect-Glic -AdminEmail admin@domain.com             # vault path — no key prompt
-Connect-Glic                                          # file path — prompts for email + key path
+Connect-Glic -KeyPath C:\keys\sa.json -AdminEmail admin@domain.com  # vault path — store + connect
+Connect-Glic -AdminEmail admin@domain.com                           # vault already set — no key prompt
+Connect-Glic                                                        # file path — prompts for email + key path
 Connect-Glic -AdminEmail admin@domain.com `
-             -ServiceAccountPath C:\keys\sa.json     # file path, scriptable
-Connect-Glic -Force                                   # re-authenticate (new key or new admin)
+             -ServiceAccountPath C:\keys\sa.json                    # file path, scriptable
+Connect-Glic -KeyPath C:\keys\new-sa.json -Force                    # update stored key + re-authenticate
 ```
 
 | Parameter | Type | Description |
 |---|---|---|
+| `-KeyPath` | string | Path to `service-account.json` — validates and stores it in `GlicVault` (requires SecretManagement + SecretStore) |
 | `-AdminEmail` | string | Google Workspace admin to impersonate via DWD — prompted if omitted and not in `glic.json` |
-| `-ServiceAccountPath` | string | Path to `service-account.json` — skipped if `GlicVault` has the key; prompted otherwise |
+| `-ServiceAccountPath` | string | Path to `service-account.json` — used directly without vault storage; skipped if `GlicVault` has the key |
 | `-Force` | switch | Re-authenticate even if a session is already active |
 
 **Output:** Nothing on the pipeline. Writes a confirmation line to the host.
@@ -506,13 +485,10 @@ Get-GlicLicenses | Export-Csv licenses.csv -NoTypeInformation
 ## Architecture
 
 ```
-Initialize-GlicAuth  (vault path, one-time)
-  → validates service-account.json
-  → registers GlicVault (SecretStore, passwordless)
-  → stores GlicServiceAccountKey in GlicVault
-
-Connect-Glic
-  → reads key from GlicVault (if available) or prompts for service-account.json path
+Connect-Glic [-KeyPath .\sa.json]  (one-time setup)
+  → if -KeyPath: validates service-account.json, registers GlicVault (SecretStore, passwordless),
+                 stores GlicServiceAccountKey in GlicVault
+  → reads key from GlicVault (if available) or -ServiceAccountPath or prompts
   → calls customers.get("my_customer") to derive customer ID
   → writes glic.json to %APPDATA%\GLic\
   → sets GlicSession (process-scoped singleton)
@@ -524,7 +500,7 @@ PowerShell pipeline
       → EmitRowsAsync()                   buffers rows; WriteObject per row on pipeline thread
 ```
 
-**`GlicCmdletBase`** is the bridge between all 10 data cmdlets. It owns: auto-connect via `TryAutoConnectAsync`, `-Config` / `-ServiceAccountPath` resolution, `ProcessRecord` error routing, `StopProcessing` → `CancellationToken`, collect-then-emit pipeline thread safety.
+**`GlicCmdletBase`** is the bridge between all 10 data cmdlets (`Get-Glic*` and `Invoke-GlicDiscover`). It owns: auto-connect via `TryAutoConnectAsync`, `-Config` / `-ServiceAccountPath` resolution, `ProcessRecord` error routing, `StopProcessing` → `CancellationToken`, collect-then-emit pipeline thread safety.
 
 **`GlicSession`** holds live `ApiClients` + `GlicConfig` for the process lifetime. Set by `Connect-Glic`; read by all data cmdlets.
 
