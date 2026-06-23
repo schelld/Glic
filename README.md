@@ -1,6 +1,6 @@
 # GLic — Google Workspace License and Device Inventory
 <p align="center">
-  <img src="assets/icon.png" alt="GLic Logo" width="200" />
+  <img src="assets/icon.png" alt="GLic Logo" width="100%" />
 </p>
 
 
