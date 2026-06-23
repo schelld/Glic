@@ -10,7 +10,7 @@ using GLic.Auth;
 namespace GLic.Cmdlets;
 
 [Cmdlet(VerbsCommunications.Connect, "Glic")]
-public sealed class ConnectGlicCmdlet : PSCmdlet
+public sealed class ConnectGlicCmdlet : PSCmdlet, IDisposable
 {
     [Parameter] public string? AdminEmail         { get; set; }
     [Parameter] public string? ServiceAccountPath { get; set; }
@@ -23,6 +23,7 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
 
     private readonly CancellationTokenSource _cts = new CancellationTokenSource();
     protected override void StopProcessing() => _cts.Cancel();
+    public void Dispose() => _cts.Dispose();
 
     protected override void ProcessRecord()
     {
@@ -88,6 +89,9 @@ public sealed class ConnectGlicCmdlet : PSCmdlet
                     Host.UI.WriteLine($"File not found: {saPath}");
                 Host.UI.Write("Path to service-account.json: ");
                 saPath = Host.UI.ReadLine()?.Trim();
+                if (saPath == null)
+                    throw new InvalidOperationException(
+                        "Cannot prompt for service-account.json in a non-interactive session. Use -ServiceAccountPath.");
             }
 
             saBytes = ReadAndStripBom(saPath!);

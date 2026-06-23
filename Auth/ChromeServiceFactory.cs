@@ -21,6 +21,7 @@ public static class ChromeServiceFactory
         ChromeManagementService.Scope.ChromeManagementReportsReadonly,
         ChromeManagementService.Scope.ChromeManagementTelemetryReadonly,
         ChromeManagementService.Scope.ChromeManagementProfilesReadonly,
+        DirectoryService.Scope.AdminDirectoryCustomerReadonly,
         DirectoryService.Scope.AdminDirectoryDeviceChromeosReadonly,
         DirectoryService.Scope.AdminDirectoryUserReadonly,
         DirectoryService.Scope.AdminDirectoryOrgunitReadonly,

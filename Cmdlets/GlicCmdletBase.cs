@@ -91,6 +91,10 @@ public abstract class GlicCmdletBase : PSCmdlet, IDisposable
             WriteError(new ErrorRecord(ex, "ConfigError", ErrorCategory.InvalidData, this));
             return;
         }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
         catch (Google.GoogleApiException ex)
         {
             WriteError(new ErrorRecord(ex, "ApiError", ErrorCategory.ConnectionError, this));

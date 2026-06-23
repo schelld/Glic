@@ -1,4 +1,8 @@
 # GLic — Google Workspace License and Device Inventory
+<p align="center">
+  <img src="assets/icon.png" alt="GLic Logo" width="200" />
+</p>
+
 
 Native PowerShell binary module that queries Google Workspace APIs (Chrome Management, Licensing, Admin Directory) and emits typed objects to the pipeline for ingestion into Enterprise IT Asset Management systems. This repository is not an official Google product.
 
