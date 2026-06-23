@@ -30,8 +30,7 @@
     PrivateData = @{
         PSData = @{
             Tags         = @('Google', 'Workspace', 'ChromeOS', 'ITAM', 'Licensing', 'Admin', 'Directory', 'Chrome')
-            ReleaseNotes = 'Initial public release. Eleven cmdlets: Connect-Glic (interactive setup with optional vault storage), Get-GlicApps, Get-GlicDevices, Get-GlicTelemetry, Get-GlicHardware, Get-GlicLicenses, Get-GlicUsers, Get-GlicManagedBrowsers, Get-GlicDeviceApps, Get-GlicBrowserExtensions, Invoke-GlicDiscover.'
-            LicenseUri   = 'https://github.com/schelld/GLIC/blob/main/LICENSE'
+LicenseUri   = 'https://github.com/schelld/GLIC/blob/main/LICENSE'
             ProjectUri   = 'https://github.com/schelld/GLIC'
         }
     }
