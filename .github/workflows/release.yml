@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Compute version
+        run: echo "VERSION=$("${{ github.ref_name }}" -replace '^v','')" >> $env:GITHUB_ENV
+
+      - name: Build
+        run: dotnet build --configuration Release -p:Version=${{ env.VERSION }}
+
+      - name: Test
+        run: dotnet test GLic.Tests --configuration Release
+
+      - name: Package
+        run: Compress-Archive -Path module\GLic\* -DestinationPath GLic-${{ github.ref_name }}.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: GLic-${{ github.ref_name }}.zip
+          generate_release_notes: true

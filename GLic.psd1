@@ -1,0 +1,37 @@
+@{
+    ModuleVersion          = '1.0.0'
+    GUID                   = 'de3505a7-d885-4aaf-9672-8656fbdd236d'
+    Author                 = 'D. Schell'
+    Copyright              = 'Copyright (c) 2026 D. Schell'
+    Description            = 'Google Workspace inventory and licensing cmdlets for IT_Asset_Management ITAM ingestion'
+    RootModule             = 'GLic.psm1'
+    PowerShellVersion      = '5.1'
+    DotNetFrameworkVersion = '4.7.2'
+    CompatiblePSEditions   = @('Desktop', 'Core')
+
+    FormatsToProcess       = @('GLic.format.ps1xml')
+    FunctionsToExport      = @()
+    AliasesToExport        = @()
+
+    CmdletsToExport        = @(
+        'Connect-Glic',
+        'Get-GlicApps',
+        'Get-GlicDevices',
+        'Get-GlicTelemetry',
+        'Get-GlicDeviceApps',
+        'Get-GlicBrowserExtensions',
+        'Get-GlicManagedBrowsers',
+        'Get-GlicHardware',
+        'Get-GlicLicenses',
+        'Get-GlicUsers',
+        'Invoke-GlicDiscover'
+    )
+
+    PrivateData = @{
+        PSData = @{
+            Tags         = @('Google', 'Workspace', 'ChromeOS', 'ITAM', 'Licensing', 'Admin', 'Directory', 'Chrome')
+LicenseUri   = 'https://github.com/schelld/GLIC/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/schelld/GLIC'
+        }
+    }
+}
