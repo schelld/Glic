@@ -523,6 +523,25 @@ Tests covering: cmdlet base (pipeline-thread safety, cancellation), per-cmdlet f
 
 No mocks — tests construct real helper instances with synthetic data.
 
+## Related Projects
+
+**[GLic-PS](https://github.com/schelld/Glic-PS)** is the pure-PowerShell sibling of this project. It surfaces the same Google Workspace data as timestamped CSV files through drop-in runner scripts rather than a compiled module.
+
+| | GLic | GLic-PS |
+|---|---|---|
+| **Runtime** | .NET 4.7.2 module, `dotnet build` required | Windows PowerShell 5.1, no build |
+| **Output** | Pipeline objects (`XxxRow` records) | Timestamped CSVs in `reports\` |
+| **Auth setup** | `Connect-Glic` wizard; DPAPI-encrypted credential store | Edit `glic.json` manually |
+| **Best for** | Interactive scripting, pipeline composition, automation tooling | Unattended ITAM collection, Task Scheduler, RMM |
+
+Use **GLic** when you want to compose results with the PowerShell pipeline (`Get-GlicHardware | Where-Object RamGb -lt 4 | Export-Csv low_ram.csv`), build automation tooling on top of typed objects, or need cancellation and async throughput for large fleets.
+
+Use **GLic-PS** when you want a drop-in folder with no dependencies — copy, configure, schedule, done.
+
+Both projects share the same API surface, DWD auth model, and SKU catalog — `glic.json` and `service-account.json` from one work with the other.
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
